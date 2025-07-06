@@ -16,10 +16,15 @@ if (getApps().length === 0) {
     throw new Error('FIREBASE_STORAGE_BUCKET environment variable is required');
   }
   
-  app = initializeApp({
-    credential: cert(JSON.parse(serviceAccount)),
-    storageBucket,
-  });
+  try {
+    app = initializeApp({
+      credential: cert(JSON.parse(serviceAccount)),
+      storageBucket,
+    });
+  } catch (error) {
+    console.error('Firebase initialization error:', error);
+    throw error;
+  }
 } else {
   app = getApps()[0];
 }
