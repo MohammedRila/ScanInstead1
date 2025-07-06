@@ -50,17 +50,50 @@ export class FirebaseStorage implements IStorage {
 
   async createPitch(pitchData: InsertPitch & { fileUrl?: string }): Promise<Pitch> {
     const id = uuidv4();
-    const pitch: Pitch = {
-      ...pitchData,
+    
+    // Create clean data object for Firestore without undefined values
+    const firestoreData: any = {
       id,
-      createdAt: new Date(),
-      fileUrl: pitchData.fileUrl,
+      homeownerId: pitchData.homeownerId,
+      visitorName: pitchData.visitorName,
+      offer: pitchData.offer,
+      reason: pitchData.reason,
+      createdAt: new Date().toISOString(),
     };
 
-    await db.collection('pitches').doc(id).set({
-      ...pitch,
-      createdAt: pitch.createdAt.toISOString(),
-    });
+    // Only add optional fields if they have values and are not empty strings
+    if (pitchData.company && pitchData.company.trim()) {
+      firestoreData.company = pitchData.company;
+    }
+    if (pitchData.visitorEmail && pitchData.visitorEmail.trim()) {
+      firestoreData.visitorEmail = pitchData.visitorEmail;
+    }
+    if (pitchData.visitorPhone && pitchData.visitorPhone.trim()) {
+      firestoreData.visitorPhone = pitchData.visitorPhone;
+    }
+    if (pitchData.fileUrl && pitchData.fileUrl.trim()) {
+      firestoreData.fileUrl = pitchData.fileUrl;
+    }
+    if (pitchData.fileName && pitchData.fileName.trim()) {
+      firestoreData.fileName = pitchData.fileName;
+    }
+
+    await db.collection('pitches').doc(id).set(firestoreData);
+
+    // Return the pitch object with proper typing
+    const pitch: Pitch = {
+      id,
+      homeownerId: pitchData.homeownerId,
+      visitorName: pitchData.visitorName,
+      company: pitchData.company,
+      offer: pitchData.offer,
+      reason: pitchData.reason,
+      visitorEmail: pitchData.visitorEmail,
+      visitorPhone: pitchData.visitorPhone,
+      fileUrl: pitchData.fileUrl,
+      fileName: pitchData.fileName,
+      createdAt: new Date(firestoreData.createdAt),
+    };
 
     return pitch;
   }

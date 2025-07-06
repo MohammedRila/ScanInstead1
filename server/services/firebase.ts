@@ -32,6 +32,11 @@ if (getApps().length === 0) {
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
+// Configure Firestore to ignore undefined values
+db.settings({
+  ignoreUndefinedProperties: true,
+});
+
 export async function uploadToFirebase(file: Express.Multer.File): Promise<string> {
   const bucket = storage.bucket();
   const fileName = `uploads/${uuidv4()}-${file.originalname}`;

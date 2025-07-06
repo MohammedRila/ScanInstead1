@@ -116,10 +116,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const validatedData = insertPitchSchema.parse(pitchData);
       
-      const pitch = await storage.createPitch({
-        ...validatedData,
-        fileUrl,
-      });
+      // Only include fileUrl if it exists
+      const pitchWithFile = fileUrl ? { ...validatedData, fileUrl } : validatedData;
+      const pitch = await storage.createPitch(pitchWithFile);
 
       // Send email notification
       try {
