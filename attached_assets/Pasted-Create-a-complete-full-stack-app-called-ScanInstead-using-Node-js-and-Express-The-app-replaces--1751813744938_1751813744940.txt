@@ -1,0 +1,62 @@
+Create a complete full-stack app called **ScanInstead** using Node.js and Express. The app replaces door-to-door knocking with a QR-based digital pitch system.
+
+🎯 Core Features:
+1. Homeowner visits `/create` with their name and email, gets a unique QR code and URL.
+2. QR links to a mobile-friendly `/v/:id` pitch form.
+3. Visitors fill:
+   - Full name (required)
+   - Company (optional)
+   - Offer (required, text or dropdown)
+   - Reason (required, paragraph)
+   - Optional file upload (image or PDF)
+   - Email & phone (optional but encouraged)
+4. Submissions:
+   - Stored in Firebase Firestore under `submissions/{id}`
+   - Emailed to the homeowner using Nodemailer
+   - Optional: logs an SMS via Twilio (SMS disabled by default)
+
+🧠 Tech Stack:
+- Backend: Node.js + Express
+- Frontend: Plain HTML + Tailwind CSS (dark/light toggle UI)
+- Database: Firebase Firestore via `firebase-admin`
+- File Upload: Multer (uploads saved in `/public/uploads`)
+- Email: Nodemailer (Gmail SMTP with App Password)
+- QR Code: `qrcode` NPM package
+- SMS (Optional): Twilio SDK (disabled unless `TWILIO_ENABLED=true`)
+- Environment Config: `.env`
+- UUID: Use `uuid` to generate unique homeowner IDs
+
+📁 Folder Structure:
+- `index.js` — main server
+- `sms.js` — Twilio helper (respects enable flag)
+- `/public/pitch.html` — mobile pitch form
+- `/public/uploads` — store uploaded flyers
+- `start.bat` — optional: Windows setup script
+- `.env.example` — environment var template
+
+📄 .env variables required:
+- FIREBASE_SERVICE_ACCOUNT_JSON={...}
+- EMAIL_USER=your_email@gmail.com
+- EMAIL_PASS=your_gmail_app_password
+- TWILIO_ENABLED=false
+- TWILIO_ACCOUNT_SID=
+- TWILIO_AUTH_TOKEN=
+- TWILIO_PHONE=
+
+⚙️ Behavior:
+- When a visitor submits the form:
+  - Store pitch data in Firebase
+  - Email homeowner a structured HTML pitch
+  - Optionally send Twilio SMS (mocked if disabled)
+
+🧪 Add confirmation messages after submit:
+- “Thanks! The homeowner has received your message. Please do not knock unless requested.”
+
+✅ Requirements:
+- Fully working in Replit
+- All dependencies installed
+- Secrets via `.env`
+- Runs with `node index.js`
+- Optionally include `start.bat` file for offline Windows use
+
+Generate all necessary files and setup.
