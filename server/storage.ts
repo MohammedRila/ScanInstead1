@@ -93,6 +93,9 @@ export class FirebaseStorage implements IStorage {
     if (pitchData.fileName && pitchData.fileName.trim()) {
       firestoreData.fileName = pitchData.fileName;
     }
+    if (pitchData.userType) {
+      firestoreData.userType = pitchData.userType;
+    }
 
     await db.collection('pitches').doc(id).set(firestoreData);
 
@@ -108,6 +111,7 @@ export class FirebaseStorage implements IStorage {
       visitorPhone: pitchData.visitorPhone,
       fileUrl: pitchData.fileUrl,
       fileName: pitchData.fileName,
+      userType: pitchData.userType || "service_provider",
       createdAt: new Date(firestoreData.createdAt),
     };
 

@@ -11,13 +11,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, AlertCircle, Info } from "lucide-react";
+import { Upload, AlertCircle, Info, User, Briefcase, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Pitch() {
   const { id } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [userType, setUserType] = useState<"homeowner" | "service_provider" | null>(null);
   const { toast } = useToast();
 
   const { data: homeowner, isLoading } = useQuery({
@@ -36,6 +37,7 @@ export default function Pitch() {
       visitorEmail: "",
       visitorPhone: "",
       fileName: "",
+      userType: "service_provider",
     },
   });
 
@@ -132,6 +134,122 @@ export default function Pitch() {
     );
   }
 
+  // User type selection screen
+  if (!userType) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 py-16">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="bg-gradient-to-br from-purple-500 to-blue-600 rounded-2xl w-20 h-20 flex items-center justify-center mx-auto mb-8 shadow-lg">
+              <User className="h-10 w-10 text-white" />
+            </div>
+            <h1 className="text-4xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+              Welcome to ScanInstead
+            </h1>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
+              Before we get started, please let us know who you are so we can personalize your experience
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 mb-12">
+            <Card 
+              className="border-2 border-gray-200 dark:border-gray-700 hover:border-purple-500 hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/30"
+              onClick={() => {
+                setUserType("homeowner");
+                form.setValue("userType", "homeowner");
+              }}
+            >
+              <CardContent className="p-8 text-center">
+                <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <Home className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">I'm a Homeowner</h3>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  I want to create my own QR code to receive digital pitches instead of door-to-door visits
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/30"
+              onClick={() => {
+                setUserType("service_provider");
+                form.setValue("userType", "service_provider");
+              }}
+            >
+              <CardContent className="p-8 text-center">
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <Briefcase className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">I'm a Service Provider</h3>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  I want to submit my business pitch to the homeowner who created this QR code
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {id === "demo" && (
+            <div className="text-center">
+              <div className="inline-block px-6 py-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 rounded-2xl border border-blue-200 dark:border-blue-800">
+                <p className="text-blue-700 dark:text-blue-300 font-medium">
+                  <Info className="inline h-5 w-5 mr-2" />
+                  Interactive Demo Mode - Try both options to see the experience
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Show different content based on user type
+  if (userType === "homeowner") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 py-16">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="bg-gradient-to-br from-purple-500 to-blue-600 rounded-2xl w-20 h-20 flex items-center justify-center mx-auto mb-8 shadow-lg">
+            <Home className="h-10 w-10 text-white" />
+          </div>
+          <h1 className="text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+            Welcome, Homeowner!
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+            It looks like you're interested in creating your own QR code to receive digital pitches. 
+            Let's get you set up with your own ScanInstead portal!
+          </p>
+          
+          <div className="space-y-6">
+            <Card className="border-0 shadow-2xl bg-white dark:bg-gray-800">
+              <CardContent className="p-8">
+                <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Create Your QR Code</h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  Click below to create your own QR code that visitors can scan to submit their business pitches digitally.
+                </p>
+                <Button 
+                  onClick={() => setLocation('/')}
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg"
+                >
+                  <Home className="mr-2 h-5 w-5" />
+                  Create My QR Code
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => setUserType(null)}
+              className="border-2"
+            >
+              Back to Selection
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 py-16">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -145,14 +263,15 @@ export default function Pitch() {
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-md mx-auto">
             Share your professional offer with the homeowner digitally
           </p>
-          {id === "demo" && (
-            <div className="mt-6 px-6 py-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 rounded-2xl border border-blue-200 dark:border-blue-800 inline-block">
-              <p className="text-blue-700 dark:text-blue-300 font-medium">
-                <Info className="inline h-5 w-5 mr-2" />
-                Interactive Demo - Experience the visitor's journey
-              </p>
-            </div>
-          )}
+          <div className="mt-6 flex justify-center">
+            <Button 
+              variant="outline" 
+              onClick={() => setUserType(null)}
+              className="border-2"
+            >
+              Back to Selection
+            </Button>
+          </div>
         </div>
 
         <Card className="border-0 shadow-2xl bg-white dark:bg-gray-800 overflow-hidden">
@@ -236,11 +355,13 @@ export default function Pitch() {
                   <p className="text-gray-700 dark:text-gray-300 mb-2 font-medium">
                     {selectedFile ? `✅ ${selectedFile.name}` : "Click to upload or drag and drop"}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">PDF, JPG, or PNG up to 5MB</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Images, Documents (PDF, Word, Excel, PowerPoint), Videos, Audio files up to 10MB
+                  </p>
                   <input
                     type="file"
                     id="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.jpg,.jpeg,.png,.gif,.webp,.bmp,.mp4,.avi,.mov,.wmv,.mp3,.wav,.m4a"
                     onChange={handleFileChange}
                     className="hidden"
                   />

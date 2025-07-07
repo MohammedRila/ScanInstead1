@@ -20,6 +20,7 @@ export const pitchSchema = z.object({
   visitorPhone: z.string().optional(),
   fileUrl: z.string().optional(),
   fileName: z.string().optional(),
+  userType: z.enum(["homeowner", "service_provider"]).default("service_provider"),
   createdAt: z.date(),
 });
 
@@ -37,6 +38,7 @@ export const insertPitchSchema = pitchSchema.pick({
   visitorEmail: true,
   visitorPhone: true,
   fileName: true,
+  userType: true,
 });
 
 export type Homeowner = z.infer<typeof homeownerSchema>;

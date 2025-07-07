@@ -10,21 +10,40 @@ import multer from "multer";
 import path from "path";
 import { promises as fs } from "fs";
 
-// Configure multer for temporary file uploads
+// Configure multer for temporary file uploads with expanded file type support
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: 10 * 1024 * 1024, // 10MB limit (increased for business documents and media)
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|pdf/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
+    // Support for various business documents, images, videos, and audio files
+    const allowedMimeTypes = [
+      // Images
+      'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp',
+      // Documents  
+      'application/pdf', 'application/msword', 
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
+      'text/plain', 'text/csv',
+      // Videos (for service demo videos)
+      'video/mp4', 'video/avi', 'video/mov', 'video/wmv',
+      // Audio (for voice pitches)
+      'audio/mp3', 'audio/wav', 'audio/m4a', 'audio/mpeg'
+    ];
     
-    if (mimetype && extname) {
+    const allowedExtensions = /\.(jpeg|jpg|png|gif|webp|bmp|pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv|mp4|avi|mov|wmv|mp3|wav|m4a)$/i;
+    
+    const hasValidMimeType = allowedMimeTypes.includes(file.mimetype);
+    const hasValidExtension = allowedExtensions.test(file.originalname);
+    
+    if (hasValidMimeType && hasValidExtension) {
       return cb(null, true);
     } else {
-      cb(new Error('Only images (JPEG, PNG) and PDF files are allowed'));
+      cb(new Error('File type not supported. Please upload images, documents (PDF, Word, Excel, PowerPoint), videos, or audio files.'));
     }
   },
 });
