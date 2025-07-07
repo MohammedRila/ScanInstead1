@@ -112,11 +112,12 @@ ScanInstead is a modern full-stack web application that replaces traditional doo
 
 ### Environment Configuration
 Required environment variables:
-- `DATABASE_URL`: PostgreSQL connection (reserved for potential future use)
+- `BASE_URL`: Your app's domain (e.g., https://your-app.render.com) for QR code generation
 - `FIREBASE_SERVICE_ACCOUNT_JSON`: Firebase authentication
 - `FIREBASE_STORAGE_BUCKET`: Firebase Storage bucket name
 - `EMAIL_USER` & `EMAIL_PASS`: Gmail SMTP credentials
 - `TWILIO_*`: SMS service configuration (optional)
+- `DATABASE_URL`: PostgreSQL connection (reserved for potential future use)
 
 ### Hosting Considerations
 - **Replit Integration**: Special handling for Replit domains and development tools

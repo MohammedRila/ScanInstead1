@@ -12,15 +12,31 @@ export interface IStorage {
 export class FirebaseStorage implements IStorage {
   async createHomeowner(insertHomeowner: InsertHomeowner): Promise<Homeowner> {
     const id = uuidv4();
-    const baseUrl = process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000';
-    const protocol = baseUrl.includes('localhost') ? 'http' : 'https';
+    // Priority: BASE_URL > REPLIT_DOMAINS > localhost fallback
+    let baseUrl = process.env.BASE_URL;
+    let protocol = 'https';
+    
+    if (!baseUrl) {
+      // Fallback to Replit domains or localhost
+      const replitDomain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000';
+      baseUrl = replitDomain;
+      protocol = baseUrl.includes('localhost') ? 'http' : 'https';
+    } else {
+      // Remove protocol from BASE_URL if it's included
+      baseUrl = baseUrl.replace(/^https?:\/\//, '');
+    }
+    
+    const pitchUrl = `${protocol}://${baseUrl}/v/${id}`;
+    
+    // Log the generated URL for debugging
+    console.log(`Generated pitch URL: ${pitchUrl}`);
     
     const homeowner: Homeowner = {
       ...insertHomeowner,
       id,
       createdAt: new Date(),
       qrUrl: "", // Will be set after QR generation
-      pitchUrl: `${protocol}://${baseUrl}/v/${id}`,
+      pitchUrl,
     };
 
     await db.collection('homeowners').doc(id).set({
