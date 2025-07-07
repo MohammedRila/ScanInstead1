@@ -133,97 +133,110 @@ export default function Pitch() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-16">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 py-16">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl">Submit Your Pitch</CardTitle>
-            <p className="text-muted-foreground">Share your offer with the homeowner</p>
-            {id === "demo" && (
-              <div className="mt-4 px-4 py-2 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                <p className="text-sm text-blue-700 dark:text-blue-300">
-                  <Info className="inline h-4 w-4 mr-1" />
-                  This is a demo of the pitch form visitors will see
-                </p>
-              </div>
-            )}
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="visitorName">
+        <div className="text-center mb-12">
+          <div className="bg-gradient-to-br from-purple-500 to-blue-600 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <Upload className="h-8 w-8 text-white" />
+          </div>
+          <h1 className="text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+            Submit Your Pitch
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-md mx-auto">
+            Share your professional offer with the homeowner digitally
+          </p>
+          {id === "demo" && (
+            <div className="mt-6 px-6 py-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 rounded-2xl border border-blue-200 dark:border-blue-800 inline-block">
+              <p className="text-blue-700 dark:text-blue-300 font-medium">
+                <Info className="inline h-5 w-5 mr-2" />
+                Interactive Demo - Experience the visitor's journey
+              </p>
+            </div>
+          )}
+        </div>
+
+        <Card className="border-0 shadow-2xl bg-white dark:bg-gray-800 overflow-hidden">
+          <CardContent className="p-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="space-y-3">
+                <Label htmlFor="visitorName" className="text-lg font-semibold text-gray-900 dark:text-white">
                   Your Full Name <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="visitorName"
                   placeholder="Enter your full name"
+                  className="h-12 text-lg border-2 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 focus:border-purple-500 focus:ring-purple-500"
                   {...form.register("visitorName")}
                 />
                 {form.formState.errors.visitorName && (
-                  <p className="text-sm text-red-500">{form.formState.errors.visitorName.message}</p>
+                  <p className="text-sm text-red-500 font-medium">{form.formState.errors.visitorName.message}</p>
                 )}
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="company">
-                  Company <span className="text-muted-foreground">(optional)</span>
+              <div className="space-y-3">
+                <Label htmlFor="company" className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Company <span className="text-gray-500 dark:text-gray-400 font-normal">(optional)</span>
                 </Label>
                 <Input
                   id="company"
                   placeholder="Your company name"
+                  className="h-12 text-lg border-2 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 focus:border-purple-500 focus:ring-purple-500"
                   {...form.register("company")}
                 />
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="offer">
-                  Your Offer <span className="text-red-500">*</span>
+              <div className="space-y-3">
+                <Label htmlFor="offer" className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Your Service <span className="text-red-500">*</span>
                 </Label>
                 <Select onValueChange={(value) => form.setValue("offer", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your offer type" />
+                  <SelectTrigger className="h-12 text-lg border-2 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600">
+                    <SelectValue placeholder="Select your service type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="landscaping">Landscaping Services</SelectItem>
-                    <SelectItem value="home-improvement">Home Improvement</SelectItem>
-                    <SelectItem value="cleaning">Cleaning Services</SelectItem>
-                    <SelectItem value="pest-control">Pest Control</SelectItem>
-                    <SelectItem value="roofing">Roofing</SelectItem>
-                    <SelectItem value="solar">Solar Installation</SelectItem>
-                    <SelectItem value="security">Security Systems</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="landscaping">🌿 Landscaping Services</SelectItem>
+                    <SelectItem value="home-improvement">🔨 Home Improvement</SelectItem>
+                    <SelectItem value="cleaning">🧽 Cleaning Services</SelectItem>
+                    <SelectItem value="pest-control">🐛 Pest Control</SelectItem>
+                    <SelectItem value="roofing">🏠 Roofing</SelectItem>
+                    <SelectItem value="solar">☀️ Solar Installation</SelectItem>
+                    <SelectItem value="security">🔒 Security Systems</SelectItem>
+                    <SelectItem value="other">💼 Other</SelectItem>
                   </SelectContent>
                 </Select>
                 {form.formState.errors.offer && (
-                  <p className="text-sm text-red-500">{form.formState.errors.offer.message}</p>
+                  <p className="text-sm text-red-500 font-medium">{form.formState.errors.offer.message}</p>
                 )}
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="reason">
+              <div className="space-y-3">
+                <Label htmlFor="reason" className="text-lg font-semibold text-gray-900 dark:text-white">
                   Why should they choose you? <span className="text-red-500">*</span>
                 </Label>
                 <Textarea
                   id="reason"
-                  rows={4}
-                  placeholder="Describe your offer, experience, pricing, or any special deals..."
+                  rows={5}
+                  placeholder="Describe your offer, experience, pricing, or any special deals you're offering..."
+                  className="text-lg border-2 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 focus:border-purple-500 focus:ring-purple-500 resize-none"
                   {...form.register("reason")}
                 />
                 {form.formState.errors.reason && (
-                  <p className="text-sm text-red-500">{form.formState.errors.reason.message}</p>
+                  <p className="text-sm text-red-500 font-medium">{form.formState.errors.reason.message}</p>
                 )}
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="file">
-                  Attach Flyer or Brochure <span className="text-muted-foreground">(optional)</span>
+              <div className="space-y-3">
+                <Label htmlFor="file" className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Attach Flyer or Brochure <span className="text-gray-500 dark:text-gray-400 font-normal">(optional)</span>
                 </Label>
-                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
-                  <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-muted-foreground mb-2">
-                    {selectedFile ? selectedFile.name : "Click to upload or drag and drop"}
+                <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-8 text-center hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-950/50 transition-all duration-300">
+                  <div className="bg-gradient-to-br from-purple-500 to-blue-600 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <Upload className="h-8 w-8 text-white" />
+                  </div>
+                  <p className="text-gray-700 dark:text-gray-300 mb-2 font-medium">
+                    {selectedFile ? `✅ ${selectedFile.name}` : "Click to upload or drag and drop"}
                   </p>
-                  <p className="text-xs text-muted-foreground">PDF, JPG, or PNG up to 5MB</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">PDF, JPG, or PNG up to 5MB</p>
                   <input
                     type="file"
                     id="file"
@@ -235,7 +248,7 @@ export default function Pitch() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="mt-2"
+                    className="mt-4 border-2"
                     onClick={() => document.getElementById("file")?.click()}
                   >
                     Choose File
@@ -243,40 +256,61 @@ export default function Pitch() {
                 </div>
               </div>
               
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="visitorEmail">
-                    Your Email <span className="text-muted-foreground">(optional)</span>
-                  </Label>
-                  <Input
-                    id="visitorEmail"
-                    type="email"
-                    placeholder="your@email.com"
-                    {...form.register("visitorEmail")}
-                  />
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Contact Information</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <Label htmlFor="visitorEmail" className="text-base font-medium text-gray-900 dark:text-white">
+                      Your Email <span className="text-gray-500 dark:text-gray-400 font-normal">(optional)</span>
+                    </Label>
+                    <Input
+                      id="visitorEmail"
+                      type="email"
+                      placeholder="your@email.com"
+                      className="h-12 border-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 focus:border-purple-500 focus:ring-purple-500"
+                      {...form.register("visitorEmail")}
+                    />
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <Label htmlFor="visitorPhone" className="text-base font-medium text-gray-900 dark:text-white">
+                      Your Phone <span className="text-gray-500 dark:text-gray-400 font-normal">(optional)</span>
+                    </Label>
+                    <Input
+                      id="visitorPhone"
+                      type="tel"
+                      placeholder="(555) 123-4567"
+                      className="h-12 border-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 focus:border-purple-500 focus:ring-purple-500"
+                      {...form.register("visitorPhone")}
+                    />
+                  </div>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="visitorPhone">
-                    Your Phone <span className="text-muted-foreground">(optional)</span>
-                  </Label>
-                  <Input
-                    id="visitorPhone"
-                    type="tel"
-                    placeholder="(555) 123-4567"
-                    {...form.register("visitorPhone")}
-                  />
-                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-3">
+                  💡 Providing contact details helps the homeowner reach you if they're interested
+                </p>
               </div>
               
               <Button 
                 type="submit" 
-                className="w-full" 
-                size="lg"
+                className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg transition-all duration-300 transform hover:scale-105" 
                 disabled={pitchMutation.isPending || id === "demo"}
               >
-                {id === "demo" ? "Demo Mode - Submission Disabled" : 
-                 pitchMutation.isPending ? "Submitting..." : "Submit Pitch"}
+                {id === "demo" ? (
+                  <div className="flex items-center space-x-2">
+                    <Info className="h-5 w-5" />
+                    <span>Demo Mode - Submission Disabled</span>
+                  </div>
+                ) : pitchMutation.isPending ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>Submitting Your Pitch...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <Upload className="h-5 w-5" />
+                    <span>Submit Professional Pitch</span>
+                  </div>
+                )}
               </Button>
             </form>
           </CardContent>
