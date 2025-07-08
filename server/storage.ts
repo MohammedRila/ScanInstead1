@@ -97,7 +97,7 @@ export class FirebaseStorage implements IStorage {
     } as Homeowner;
   }
 
-  async createPitch(pitchData: InsertPitch & { fileUrl?: string }): Promise<Pitch> {
+  async createPitch(pitchData: InsertPitch & { fileUrl?: string; aiAnalysis?: any }): Promise<Pitch> {
     const id = uuidv4();
     
     // Create clean data object for Firestore without undefined values
@@ -130,6 +130,18 @@ export class FirebaseStorage implements IStorage {
       firestoreData.userType = pitchData.userType;
     }
 
+    // Add AI analysis fields if available
+    if (pitchData.aiAnalysis) {
+      firestoreData.sentiment = pitchData.aiAnalysis.sentiment;
+      firestoreData.sentimentConfidence = pitchData.aiAnalysis.confidence;
+      firestoreData.aiSummary = pitchData.aiAnalysis.summary;
+      firestoreData.detectedBusinessType = pitchData.aiAnalysis.businessType;
+      firestoreData.urgency = pitchData.aiAnalysis.urgency;
+      firestoreData.categories = pitchData.aiAnalysis.categories;
+      firestoreData.isSpam = pitchData.aiAnalysis.isSpam;
+      firestoreData.aiProcessed = true;
+    }
+
     await db.collection('pitches').doc(id).set(firestoreData);
 
     // Return the pitch object with proper typing
@@ -146,6 +158,15 @@ export class FirebaseStorage implements IStorage {
       fileName: pitchData.fileName,
       userType: pitchData.userType || "service_provider",
       createdAt: new Date(firestoreData.createdAt),
+      // AI Analysis fields
+      sentiment: pitchData.aiAnalysis?.sentiment,
+      sentimentConfidence: pitchData.aiAnalysis?.confidence,
+      aiSummary: pitchData.aiAnalysis?.summary,
+      detectedBusinessType: pitchData.aiAnalysis?.businessType,
+      urgency: pitchData.aiAnalysis?.urgency,
+      categories: pitchData.aiAnalysis?.categories,
+      isSpam: pitchData.aiAnalysis?.isSpam,
+      aiProcessed: !!pitchData.aiAnalysis,
     };
 
     return pitch;

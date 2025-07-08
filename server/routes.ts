@@ -6,6 +6,7 @@ import { generateQRCode } from "./services/qr";
 import { sendPitchEmail } from "./services/email";
 import { sendPitchSMS } from "./services/sms";
 import { uploadToFirebase } from "./services/firebase";
+import { analyzePitch } from "./services/ai";
 import multer from "multer";
 import path from "path";
 import { promises as fs } from "fs";
@@ -97,6 +98,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get pitches for homeowner
+  app.get("/api/homeowner/:id/pitches", async (req, res) => {
+    try {
+      const pitches = await storage.getPitchesByHomeowner(req.params.id);
+      res.json({
+        success: true,
+        pitches,
+      });
+    } catch (error) {
+      console.error('Error getting pitches:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get pitches',
+      });
+    }
+  });
+
   // Submit pitch
   app.post("/api/pitch/:id", upload.single('file'), async (req, res) => {
     try {
@@ -135,8 +153,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const validatedData = insertPitchSchema.parse(pitchData);
       
+      // Perform AI analysis on the pitch content
+      let aiAnalysis;
+      try {
+        const pitchContent = `${validatedData.offer} ${validatedData.reason}`;
+        const businessName = validatedData.company || 'Unknown Business';
+        aiAnalysis = await analyzePitch(pitchContent, businessName);
+        console.log('AI Analysis completed:', aiAnalysis);
+      } catch (aiError) {
+        console.error('AI Analysis failed:', aiError);
+        // Continue without AI analysis if it fails
+      }
+      
       // Only include fileUrl if it exists
-      const pitchWithFile = fileUrl ? { ...validatedData, fileUrl } : validatedData;
+      const pitchWithFile = fileUrl ? { ...validatedData, fileUrl, aiAnalysis } : { ...validatedData, aiAnalysis };
       const pitch = await storage.createPitch(pitchWithFile);
 
       // Send email notification

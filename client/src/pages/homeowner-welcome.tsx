@@ -100,9 +100,15 @@ export default function HomeownerWelcome() {
           </p>
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
             <Shield className="w-8 h-8 text-green-500 mx-auto mb-3" />
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
               Your information is secure and you can manage your preferences anytime.
             </p>
+            <Button 
+              onClick={() => window.open(`/homeowner/dashboard/${id}`, '_blank')} 
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              View My AI Dashboard
+            </Button>
           </div>
         </div>
       </div>

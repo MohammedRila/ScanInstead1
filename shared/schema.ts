@@ -49,6 +49,15 @@ export const pitchSchema = z.object({
   fileName: z.string().optional(),
   userType: z.enum(["homeowner", "service_provider"]).default("service_provider"),
   createdAt: z.date(),
+  // AI Analysis fields
+  sentiment: z.enum(['positive', 'neutral', 'negative']).optional(),
+  sentimentConfidence: z.number().optional(),
+  aiSummary: z.string().optional(),
+  detectedBusinessType: z.string().optional(),
+  urgency: z.enum(['low', 'medium', 'high']).optional(),
+  categories: z.array(z.string()).optional(),
+  isSpam: z.boolean().optional(),
+  aiProcessed: z.boolean().default(false),
 });
 
 export const insertHomeownerSchema = homeownerSchema.pick({

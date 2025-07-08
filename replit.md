@@ -43,9 +43,15 @@ ScanInstead is a modern full-stack web application that replaces traditional doo
 
 ### Service Layer
 - **QR Code Generation**: Uses `qrcode` library to create scannable codes
-- **Email Service**: Nodemailer with Gmail SMTP for pitch notifications
+- **Email Service**: Resend API for pitch notifications
 - **SMS Service**: Twilio integration (optional, configurable)
 - **File Upload**: Firebase Storage with public URL generation
+- **AI Analysis**: Hugging Face API for intelligent pitch processing
+  - Sentiment analysis of pitch content
+  - Business type detection and categorization
+  - Spam/inappropriate content filtering
+  - Urgency level assessment
+  - Automatic content summarization
 
 ### API Endpoints
 - `POST /api/create` - Create homeowner and generate QR code
@@ -129,6 +135,11 @@ Required environment variables:
 
 ```
 Changelog:
+- July 08, 2025. Integrated Hugging Face AI for intelligent pitch analysis and spam detection
+- July 08, 2025. Added AI-powered homeowner dashboard with sentiment analysis and business insights
+- July 08, 2025. Implemented automatic pitch categorization and urgency detection using AI
+- July 08, 2025. Enhanced database schema to store AI analysis results (sentiment, confidence, business type detection)
+- July 08, 2025. Added smart content filtering and spam detection to protect homeowners
 - July 08, 2025. Enhanced UI creativity throughout the app with modern gradients, animations, and visual elements
 - July 08, 2025. Migrated successfully from Replit Agent to Replit environment with improved security
 - July 08, 2025. Updated all pages with professional, modern design language and better UX
