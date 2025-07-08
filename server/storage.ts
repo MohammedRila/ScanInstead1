@@ -29,32 +29,30 @@ export interface IStorage {
 export class FirebaseStorage implements IStorage {
   async createHomeowner(insertHomeowner: InsertHomeowner): Promise<Homeowner> {
     const id = uuidv4();
-    // Priority: BASE_URL > REPLIT_DOMAINS > auto-generated Replit URL > localhost fallback
-    let baseUrl = process.env.BASE_URL;
+    // Priority: REPLIT_DOMAINS > auto-generated Replit URL > BASE_URL > localhost fallback
+    let baseUrl = '';
     let protocol = 'https';
     
-    if (!baseUrl) {
-      // Check for Replit domains first
-      const replitDomain = process.env.REPLIT_DOMAINS?.split(',')[0];
-      if (replitDomain) {
-        baseUrl = replitDomain;
-        protocol = 'https';
-      } else {
-        // Generate Replit URL based on REPL_SLUG and REPL_OWNER
-        const replSlug = process.env.REPL_SLUG;
-        const replOwner = process.env.REPL_OWNER;
-        if (replSlug && replOwner) {
-          baseUrl = `${replSlug}--${replOwner}.replit.app`;
-          protocol = 'https';
-        } else {
-          // Final fallback to localhost
-          baseUrl = 'localhost:5000';
-          protocol = 'http';
-        }
-      }
+    // Check for Replit domains first
+    const replitDomain = process.env.REPLIT_DOMAINS?.split(',')[0];
+    if (replitDomain) {
+      baseUrl = replitDomain;
+      protocol = 'https';
     } else {
-      // Remove protocol from BASE_URL if it's included
-      baseUrl = baseUrl.replace(/^https?:\/\//, '');
+      // Generate Replit URL based on REPL_SLUG and REPL_OWNER
+      const replSlug = process.env.REPL_SLUG;
+      const replOwner = process.env.REPL_OWNER;
+      if (replSlug && replOwner) {
+        baseUrl = `${replSlug}--${replOwner}.replit.app`;
+        protocol = 'https';
+      } else if (process.env.BASE_URL && process.env.BASE_URL !== 'w') {
+        // Use BASE_URL only if it's not the malformed "w" value
+        baseUrl = process.env.BASE_URL.replace(/^https?:\/\//, '');
+      } else {
+        // Final fallback to localhost
+        baseUrl = 'localhost:5000';
+        protocol = 'http';
+      }
     }
     
     const pitchUrl = `${protocol}://${baseUrl}/l/${id}`;
