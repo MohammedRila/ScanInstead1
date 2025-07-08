@@ -175,7 +175,6 @@ export class FirebaseStorage implements IStorage {
   async getPitchesByHomeowner(homeownerId: string): Promise<Pitch[]> {
     const snapshot = await db.collection('pitches')
       .where('homeownerId', '==', homeownerId)
-      .orderBy('createdAt', 'desc')
       .get();
 
     return snapshot.docs.map(doc => {

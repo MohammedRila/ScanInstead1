@@ -25,11 +25,27 @@ export async function analyzePitch(pitchContent: string, businessName: string): 
     const sentimentResult = await hf.textClassification({
       model: 'cardiffnlp/twitter-roberta-base-sentiment-latest',
       inputs: pitchContent
+    }).catch(() => {
+      // Fallback to rule-based analysis if model is unavailable
+      const positiveWords = ['excellent', 'premium', 'professional', 'warranty', 'discount', 'quality', 'experienced', 'trusted'];
+      const negativeWords = ['urgent', 'immediate', 'problems', 'damage', 'failing', 'emergency', 'critical'];
+      
+      const words = pitchContent.toLowerCase().split(' ');
+      const positiveCount = words.filter(word => positiveWords.some(pos => word.includes(pos))).length;
+      const negativeCount = words.filter(word => negativeWords.some(neg => word.includes(neg))).length;
+      
+      if (positiveCount > negativeCount) {
+        return [{ label: 'POSITIVE', score: 0.7 }];
+      } else if (negativeCount > positiveCount) {
+        return [{ label: 'NEGATIVE', score: 0.7 }];
+      } else {
+        return [{ label: 'NEUTRAL', score: 0.6 }];
+      }
     });
 
     // Get the top sentiment
     const topSentiment = sentimentResult[0];
-    const sentiment = topSentiment.label.toLowerCase() as 'positive' | 'neutral' | 'negative';
+    const sentiment = topSentiment.label.toLowerCase().replace('label_', '') as 'positive' | 'neutral' | 'negative';
 
     // Business type detection from content
     const businessType = await detectBusinessType(pitchContent, businessName);
@@ -97,7 +113,31 @@ export async function detectBusinessType(content: string, businessName: string):
       suggestedTypes: result.labels.slice(0, 3)
     };
   } catch (error) {
-    console.error('Error detecting business type:', error);
+    console.error('Error detecting business type with AI:', error);
+    
+    // Fallback to rule-based detection
+    const businessKeywords = {
+      'Roofing': ['roof', 'roofing', 'shingles', 'gutters', 'leak'],
+      'Solar Energy': ['solar', 'panels', 'energy', 'electricity', 'power'],
+      'HVAC': ['hvac', 'heating', 'cooling', 'air conditioning', 'furnace'],
+      'Security Systems': ['security', 'alarm', 'protection', 'surveillance', 'monitoring'],
+      'Landscaping': ['landscape', 'lawn', 'garden', 'trees', 'mowing'],
+      'Insurance': ['insurance', 'policy', 'coverage', 'claims', 'protection'],
+      'Home Improvement': ['renovation', 'remodel', 'improvement', 'upgrade', 'repair']
+    };
+
+    const combinedText = `${businessName} ${content}`.toLowerCase();
+    
+    for (const [type, keywords] of Object.entries(businessKeywords)) {
+      if (keywords.some(keyword => combinedText.includes(keyword))) {
+        return {
+          detectedType: type,
+          confidence: 0.7,
+          suggestedTypes: [type]
+        };
+      }
+    }
+    
     return {
       detectedType: 'Other',
       confidence: 0.5,
@@ -135,11 +175,27 @@ export async function detectSpam(content: string): Promise<boolean> {
 
     // Check if content is classified as toxic/spam
     const toxicScore = result.find(r => r.label === 'TOXIC')?.score || 0;
-    return toxicScore > 0.7; // Threshold for spam detection
+    if (toxicScore > 0.7) return true;
   } catch (error) {
-    console.error('Error detecting spam:', error);
-    return false;
+    console.error('Error detecting spam with AI model:', error);
   }
+
+  // Fallback to rule-based spam detection
+  const spamKeywords = ['win', 'winner', 'prize', 'free money', 'congratulations', 'urgent', 'limited time', 'act now', 'click here', 'selected', 'claim', 'expires', 'no payment', 'cash prize'];
+  const lowerContent = content.toLowerCase();
+  
+  // Check for spam indicators
+  const spamIndicators = spamKeywords.filter(keyword => lowerContent.includes(keyword));
+  
+  // Check for excessive punctuation (multiple exclamation marks)
+  const excessivePunctuation = (content.match(/!!!+/g) || []).length > 2;
+  
+  // Check for ALL CAPS words
+  const allCapsWords = content.split(' ').filter(word => word.length > 3 && word === word.toUpperCase());
+  const excessiveCaps = allCapsWords.length > 5;
+  
+  // Consider spam if multiple indicators present
+  return spamIndicators.length >= 3 || excessivePunctuation || excessiveCaps;
 }
 
 // Extract categories from content
