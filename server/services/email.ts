@@ -49,10 +49,18 @@ export async function sendPitchEmail(homeowner: Homeowner, pitch: Pitch): Promis
     </div>
   `;
 
-  await resend.emails.send({
-    from: 'ScanInstead <noreply@scaninstead.com>',
-    to: homeowner.email,
-    subject: `New Pitch from ${pitch.visitorName}${pitch.company ? ` (${pitch.company})` : ''}`,
-    html: emailHtml,
-  });
+  try {
+    const result = await resend.emails.send({
+      from: 'ScanInstead <noreply@resend.dev>',
+      to: homeowner.email,
+      subject: `New Pitch from ${pitch.visitorName}${pitch.company ? ` (${pitch.company})` : ''}`,
+      html: emailHtml,
+    });
+    
+    console.log('Email sent successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('Detailed email error:', error);
+    throw error;
+  }
 }

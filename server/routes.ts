@@ -171,7 +171,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Send email notification
       try {
+        console.log('Attempting to send email to:', homeowner.email);
         await sendPitchEmail(homeowner, pitch);
+        console.log('Email sent successfully!');
       } catch (emailError) {
         console.error('Error sending email:', emailError);
         // Don't fail the request if email fails
