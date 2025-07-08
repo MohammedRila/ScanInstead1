@@ -175,6 +175,10 @@ export class FirebaseStorage implements IStorage {
     }
 
     const existingData = doc.data();
+    if (!existingData) {
+      throw new Error('Invalid homeowner data');
+    }
+
     const updatedData = {
       ...existingData,
       ...data,
@@ -184,6 +188,16 @@ export class FirebaseStorage implements IStorage {
 
     await homeownerRef.update(updatedData);
 
+    // Handle timestamp conversion properly
+    let createdAt: Date;
+    if (existingData.createdAt && typeof existingData.createdAt.toDate === 'function') {
+      createdAt = existingData.createdAt.toDate();
+    } else if (existingData.createdAt instanceof Date) {
+      createdAt = existingData.createdAt;
+    } else {
+      createdAt = new Date(existingData.createdAt);
+    }
+
     return {
       id,
       fullName: updatedData.fullName,
@@ -191,7 +205,7 @@ export class FirebaseStorage implements IStorage {
       phone: updatedData.phone,
       isRegistered: true,
       notificationPreference: updatedData.notificationPreference,
-      createdAt: existingData.createdAt.toDate(),
+      createdAt,
       qrUrl: existingData.qrUrl,
       pitchUrl: existingData.pitchUrl,
     };
@@ -269,10 +283,9 @@ export class FirebaseStorage implements IStorage {
   async getScansByHomeowner(homeownerId: string): Promise<ScanTracking[]> {
     const snapshot = await db.collection('scan_tracking')
       .where('homeownerId', '==', homeownerId)
-      .orderBy('scannedAt', 'desc')
       .get();
 
-    return snapshot.docs.map(doc => {
+    const scans = snapshot.docs.map(doc => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -282,15 +295,17 @@ export class FirebaseStorage implements IStorage {
         location: data.location,
       };
     });
+
+    // Sort client-side to avoid index requirements
+    return scans.sort((a, b) => b.scannedAt.getTime() - a.scannedAt.getTime());
   }
 
   async getScansBySalesman(salesmanId: string): Promise<ScanTracking[]> {
     const snapshot = await db.collection('scan_tracking')
       .where('salesmanId', '==', salesmanId)
-      .orderBy('scannedAt', 'desc')
       .get();
 
-    return snapshot.docs.map(doc => {
+    const scans = snapshot.docs.map(doc => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -300,33 +315,29 @@ export class FirebaseStorage implements IStorage {
         location: data.location,
       };
     });
+
+    // Sort client-side to avoid index requirements
+    return scans.sort((a, b) => b.scannedAt.getTime() - a.scannedAt.getTime());
   }
 
   async getSalesmanStats(salesmanId: string): Promise<{ todayScans: number; weekScans: number; monthScans: number; }> {
+    // For development, we'll calculate stats from all scans
+    // In production, you would set up Firestore composite indexes
+    const allScans = await this.getScansBySalesman(salesmanId);
+    
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
     const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    const [todaySnapshot, weekSnapshot, monthSnapshot] = await Promise.all([
-      db.collection('scan_tracking')
-        .where('salesmanId', '==', salesmanId)
-        .where('scannedAt', '>=', today)
-        .get(),
-      db.collection('scan_tracking')
-        .where('salesmanId', '==', salesmanId)
-        .where('scannedAt', '>=', weekAgo)
-        .get(),
-      db.collection('scan_tracking')
-        .where('salesmanId', '==', salesmanId)
-        .where('scannedAt', '>=', monthAgo)
-        .get(),
-    ]);
+    const todayScans = allScans.filter(scan => scan.scannedAt >= today).length;
+    const weekScans = allScans.filter(scan => scan.scannedAt >= weekAgo).length;
+    const monthScans = allScans.filter(scan => scan.scannedAt >= monthAgo).length;
 
     return {
-      todayScans: todaySnapshot.size,
-      weekScans: weekSnapshot.size,
-      monthScans: monthSnapshot.size,
+      todayScans,
+      weekScans,
+      monthScans,
     };
   }
 }

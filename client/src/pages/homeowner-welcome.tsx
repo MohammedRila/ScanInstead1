@@ -56,10 +56,32 @@ export default function HomeownerWelcome() {
   });
 
   // Check if homeowner is already registered
-  const { data: homeowner } = useQuery({
+  const { data: homeowner, isLoading } = useQuery({
     queryKey: [`/api/homeowner/${id}`],
     enabled: !!id,
   });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600 dark:text-gray-300">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!homeowner) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">QR Code Not Found</h1>
+          <p className="text-gray-600 dark:text-gray-300">This QR code doesn't exist or has expired.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isRegistered || homeowner?.isRegistered) {
     return (

@@ -129,6 +129,12 @@ Required environment variables:
 
 ```
 Changelog:
+- July 08, 2025. Implemented complete business registration system with one-time homeowner/salesman accounts
+- July 08, 2025. Added salesman dashboard with scan tracking and analytics (daily/weekly/monthly stats)
+- July 08, 2025. Created homeowner welcome page with "ScanInstead Certified" confirmation system
+- July 08, 2025. Built scan tracking system for QR code interactions and neighborhood coverage
+- July 08, 2025. Added business branding with professional landing pages and statistics
+- July 08, 2025. Implemented notification preferences (email/SMS) for homeowners
 - July 08, 2025. Added dynamic landing page with homeowner/service provider selection
 - July 08, 2025. Implemented Google Analytics tracking for QR code scans and user flow
 - July 08, 2025. Updated QR code URLs to point to new landing page (/l/:id)
