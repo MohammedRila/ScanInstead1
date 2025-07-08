@@ -32,12 +32,14 @@ export default function HomeownerWelcome() {
 
   const registerMutation = useMutation({
     mutationFn: async (data: InsertHomeowner) => {
-      const response = await apiRequest(`/api/homeowner/register/${id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      return response;
+      try {
+        const response = await apiRequest("POST", `/api/homeowner/register/${id}`, data);
+        const result = await response.json();
+        return result;
+      } catch (error) {
+        console.error('Registration error:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       setIsRegistered(true);

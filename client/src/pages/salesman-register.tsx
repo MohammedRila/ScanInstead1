@@ -61,12 +61,13 @@ export default function SalesmanRegister() {
 
   const registerMutation = useMutation({
     mutationFn: async (data: InsertSalesman) => {
-      const response = await apiRequest("/api/salesman/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      return response;
+      try {
+        const response = await apiRequest("POST", "/api/salesman/register", data);
+        return response.json();
+      } catch (error) {
+        console.error('Registration error:', error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
       setIsRegistered(true);
