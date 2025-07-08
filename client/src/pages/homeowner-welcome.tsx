@@ -121,34 +121,42 @@ export default function HomeownerWelcome() {
             Welcome to ScanInstead
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            We're revolutionizing door-to-door sales with digital QR code technology. 
-            No more unexpected knocks - just organized, respectful business pitches delivered digitally.
+            The revolutionary QR code system that eliminates door-to-door interruptions while connecting you with quality service providers.
           </p>
         </div>
 
-        {/* Statistics Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          <Card className="text-center">
-            <CardContent className="pt-6">
-              <Users className="w-8 h-8 text-blue-600 mx-auto mb-3" />
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">10,000+</h3>
-              <p className="text-gray-600 dark:text-gray-300">Homeowners Protected</p>
-            </CardContent>
-          </Card>
-          <Card className="text-center">
-            <CardContent className="pt-6">
-              <Shield className="w-8 h-8 text-green-600 mx-auto mb-3" />
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">95%</h3>
-              <p className="text-gray-600 dark:text-gray-300">Fewer Door Knocks</p>
-            </CardContent>
-          </Card>
-          <Card className="text-center">
-            <CardContent className="pt-6">
-              <CheckCircle className="w-8 h-8 text-purple-600 mx-auto mb-3" />
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">100%</h3>
-              <p className="text-gray-600 dark:text-gray-300">Digital & Organized</p>
-            </CardContent>
-          </Card>
+        {/* What We Do Section */}
+        <div className="mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-8">How ScanInstead Works</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card className="text-center">
+              <CardContent className="pt-6">
+                <div className="mx-auto w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-4">
+                  <Home className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">1. Get Your QR Code</h3>
+                <p className="text-gray-600 dark:text-gray-300">Display your unique QR code on your door or mailbox</p>
+              </CardContent>
+            </Card>
+            <Card className="text-center">
+              <CardContent className="pt-6">
+                <div className="mx-auto w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-4">
+                  <Shield className="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">2. No More Knocks</h3>
+                <p className="text-gray-600 dark:text-gray-300">Service providers scan instead of knocking on your door</p>
+              </CardContent>
+            </Card>
+            <Card className="text-center">
+              <CardContent className="pt-6">
+                <div className="mx-auto w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mb-4">
+                  <CheckCircle className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">3. Get Notifications</h3>
+                <p className="text-gray-600 dark:text-gray-300">Review offers on your schedule via email or SMS</p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Registration Form */}

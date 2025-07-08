@@ -14,7 +14,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Briefcase, CheckCircle, Building, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-// Common business types - you can expand this list
+// Common business types - comprehensive list for door-to-door services
 const BUSINESS_TYPES = [
   "Home Improvement",
   "Solar Energy",
@@ -29,6 +29,19 @@ const BUSINESS_TYPES = [
   "Internet/Cable",
   "Water Treatment",
   "Cleaning Services",
+  "Lawn Care",
+  "Tree Services",
+  "Painting",
+  "Flooring",
+  "Kitchen/Bath Remodeling",
+  "Electrical",
+  "Plumbing",
+  "Concrete/Masonry",
+  "Gutter Services",
+  "Pool Services",
+  "Moving Services",
+  "Appliance Repair",
+  "Handyman Services",
   "Other"
 ];
 
@@ -185,9 +198,9 @@ export default function SalesmanRegister() {
                     name="firstName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>First Name</FormLabel>
+                        <FormLabel>Legal First Name</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Enter your first name" />
+                          <Input {...field} placeholder="Enter your legal first name" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -199,9 +212,9 @@ export default function SalesmanRegister() {
                     name="lastName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Last Name</FormLabel>
+                        <FormLabel>Legal Last Name</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Enter your last name" />
+                          <Input {...field} placeholder="Enter your legal last name" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
