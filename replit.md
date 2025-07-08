@@ -81,7 +81,7 @@ ScanInstead is a modern full-stack web application that replaces traditional doo
 - **Firebase Service Account**: Authentication via JSON credentials
 
 ### Communication Services
-- **Nodemailer**: Email delivery via Gmail SMTP
+- **Resend**: Email delivery service for pitch notifications
 - **Twilio**: SMS notifications (optional, feature-flagged)
 
 ### Frontend Libraries
@@ -112,10 +112,10 @@ ScanInstead is a modern full-stack web application that replaces traditional doo
 
 ### Environment Configuration
 Required environment variables:
-- `BASE_URL`: Your app's domain (e.g., https://your-app.render.com) for QR code generation
+- `BASE_URL`: Your app's domain (e.g., https://your-app.replit.app) for QR code generation
 - `FIREBASE_SERVICE_ACCOUNT_JSON`: Firebase authentication
 - `FIREBASE_STORAGE_BUCKET`: Firebase Storage bucket name
-- `EMAIL_USER` & `EMAIL_PASS`: Gmail SMTP credentials
+- `RESEND_API_KEY`: Resend API key for email delivery
 - `TWILIO_*`: SMS service configuration (optional)
 - `DATABASE_URL`: PostgreSQL connection (reserved for potential future use)
 
@@ -129,6 +129,8 @@ Required environment variables:
 
 ```
 Changelog:
+- July 08, 2025. Migrated from Replit Agent to Replit environment
+- July 08, 2025. Switched email service from nodemailer/Gmail to Resend
 - July 06, 2025. Initial setup
 ```
 

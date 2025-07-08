@@ -1,13 +1,7 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { type Homeowner, type Pitch } from '@shared/schema';
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendPitchEmail(homeowner: Homeowner, pitch: Pitch): Promise<void> {
   const emailHtml = `
@@ -55,8 +49,8 @@ export async function sendPitchEmail(homeowner: Homeowner, pitch: Pitch): Promis
     </div>
   `;
 
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
+  await resend.emails.send({
+    from: 'ScanInstead <noreply@scaninstead.com>',
     to: homeowner.email,
     subject: `New Pitch from ${pitch.visitorName}${pitch.company ? ` (${pitch.company})` : ''}`,
     html: emailHtml,
