@@ -29,8 +29,10 @@ export default function Home() {
             <Badge variant="outline" className="mb-6 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
               ⚡ Smart QR Technology
             </Badge>
-            <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight mb-8 bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-300 dark:to-purple-300 bg-clip-text text-transparent">
-              Replace Door Knocking with Smart Digital Pitches
+            <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight mb-8 leading-tight">
+              <span className="bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-300 dark:to-purple-300 bg-clip-text text-transparent">
+                Replace Door Knocking with Smart Digital Pitches
+              </span>
             </h1>
             <p className="text-xl lg:text-2xl text-gray-600 dark:text-gray-300 mb-10 max-w-3xl mx-auto leading-relaxed">
               Create a QR code for your door. Let visitors submit professional pitches digitally. 
