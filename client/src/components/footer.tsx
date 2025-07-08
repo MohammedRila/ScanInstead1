@@ -1,4 +1,5 @@
 import { QrCode, Heart } from "lucide-react";
+import { Link } from "wouter";
 
 export function Footer() {
   return (
@@ -28,20 +29,20 @@ export function Footer() {
           <div>
             <h5 className="font-bold text-lg mb-6 text-white">Product</h5>
             <ul className="space-y-3">
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors duration-300 hover:translate-x-1 transform block">How it Works</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors duration-300 hover:translate-x-1 transform block">Features</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors duration-300 hover:translate-x-1 transform block">Pricing</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors duration-300 hover:translate-x-1 transform block">FAQ</a></li>
+              <li><Link href="/" className="text-gray-300 hover:text-white transition-colors duration-300 hover:translate-x-1 transform block">How it Works</Link></li>
+              <li><Link href="/features" className="text-gray-300 hover:text-white transition-colors duration-300 hover:translate-x-1 transform block">Features</Link></li>
+              <li><Link href="/create" className="text-gray-300 hover:text-white transition-colors duration-300 hover:translate-x-1 transform block">Get Started</Link></li>
+              <li><Link href="/faq" className="text-gray-300 hover:text-white transition-colors duration-300 hover:translate-x-1 transform block">FAQ</Link></li>
             </ul>
           </div>
           
           <div>
             <h5 className="font-bold text-lg mb-6 text-white">Support</h5>
             <ul className="space-y-3">
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors duration-300 hover:translate-x-1 transform block">Contact</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors duration-300 hover:translate-x-1 transform block">Help Center</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors duration-300 hover:translate-x-1 transform block">Privacy Policy</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors duration-300 hover:translate-x-1 transform block">Terms of Service</a></li>
+              <li><a href="mailto:support@scaninstead.com" className="text-gray-300 hover:text-white transition-colors duration-300 hover:translate-x-1 transform block">Contact</a></li>
+              <li><Link href="/faq" className="text-gray-300 hover:text-white transition-colors duration-300 hover:translate-x-1 transform block">Help Center</Link></li>
+              <li><Link href="/privacy" className="text-gray-300 hover:text-white transition-colors duration-300 hover:translate-x-1 transform block">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="text-gray-300 hover:text-white transition-colors duration-300 hover:translate-x-1 transform block">Terms of Service</Link></li>
             </ul>
           </div>
         </div>

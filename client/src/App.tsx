@@ -19,6 +19,10 @@ import HomeownerWelcome from "@/pages/homeowner-welcome";
 import SalesmanRegister from "@/pages/salesman-register";
 import SalesmanDashboard from "@/pages/salesman-dashboard";
 import HomeownerDashboard from "@/pages/homeowner-dashboard";
+import Terms from "@/pages/terms";
+import Privacy from "@/pages/privacy";
+import FAQ from "@/pages/faq";
+import Features from "@/pages/features";
 
 function Router() {
   // Track page views when routes change
@@ -38,6 +42,10 @@ function Router() {
           <Route path="/salesman/dashboard/:id" component={SalesmanDashboard} />
           <Route path="/v/:id" component={Pitch} />
           <Route path="/success" component={Success} />
+          <Route path="/terms" component={Terms} />
+          <Route path="/privacy" component={Privacy} />
+          <Route path="/faq" component={FAQ} />
+          <Route path="/features" component={Features} />
           <Route component={NotFound} />
         </Switch>
       </main>

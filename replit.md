@@ -57,6 +57,13 @@ ScanInstead is a modern full-stack web application that replaces traditional doo
 - `POST /api/create` - Create homeowner and generate QR code
 - `GET /api/homeowner/:id` - Retrieve homeowner details
 - `POST /api/pitch` - Submit visitor pitch with file upload support
+- `GET /api/homeowner/:id/pitches` - Retrieve all pitches for a homeowner
+
+### Legal & Documentation Pages
+- `/terms` - Terms of Service with comprehensive user responsibilities and platform policies
+- `/privacy` - Privacy Policy covering data collection, usage, and protection measures
+- `/faq` - Frequently Asked Questions with detailed answers for homeowners and service providers
+- `/features` - Comprehensive feature overview highlighting platform capabilities without revealing implementation details
 
 ## Data Flow
 
@@ -157,6 +164,10 @@ Changelog:
 - July 08, 2025. Updated QR code URLs to point to new landing page (/l/:id)
 - July 08, 2025. Configured automatic Replit domain detection for QR code generation
 - July 08, 2025. Switched email service from nodemailer/Gmail to Resend
+- July 08, 2025. Fixed email notification system and verified successful delivery to user's email
+- July 08, 2025. Created comprehensive legal pages (Terms of Service, Privacy Policy, FAQ, Features)
+- July 08, 2025. Designed legal content strategically to protect intellectual property while providing transparency
+- July 08, 2025. Added professional footer navigation with links to all legal and support pages
 - July 06, 2025. Initial setup
 ```
 
