@@ -6,13 +6,20 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { useEffect } from "react";
+import { initGA } from "./lib/analytics";
+import { useAnalytics } from "./hooks/use-analytics";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Create from "@/pages/create";
 import Pitch from "@/pages/pitch";
 import Success from "@/pages/success";
+import Landing from "@/pages/landing";
 
 function Router() {
+  // Track page views when routes change
+  useAnalytics();
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -20,6 +27,7 @@ function Router() {
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/create" component={Create} />
+          <Route path="/l/:id" component={Landing} />
           <Route path="/v/:id" component={Pitch} />
           <Route path="/success" component={Success} />
           <Route component={NotFound} />
@@ -31,6 +39,16 @@ function Router() {
 }
 
 function App() {
+  // Initialize Google Analytics when app loads
+  useEffect(() => {
+    // Verify required environment variable is present
+    if (!import.meta.env.VITE_GA_MEASUREMENT_ID) {
+      console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');
+    } else {
+      initGA();
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>

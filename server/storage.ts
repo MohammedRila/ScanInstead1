@@ -26,7 +26,7 @@ export class FirebaseStorage implements IStorage {
       baseUrl = baseUrl.replace(/^https?:\/\//, '');
     }
     
-    const pitchUrl = `${protocol}://${baseUrl}/v/${id}`;
+    const pitchUrl = `${protocol}://${baseUrl}/l/${id}`;
     
     // Log the generated URL for debugging
     console.log(`Generated pitch URL: ${pitchUrl}`);
