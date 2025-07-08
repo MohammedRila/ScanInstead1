@@ -34,38 +34,38 @@ export default function Landing() {
 
         <div className="space-y-4">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-blue-500">
-            <Link href={`/v/${id}`} onClick={() => handleRoleSelection('service_provider')}>
+            <Link href="/salesman/register" onClick={() => handleRoleSelection('service_provider')}>
               <CardHeader className="text-center pb-3">
                 <div className="mx-auto w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center mb-2">
                   <Wrench className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <CardTitle className="text-xl text-gray-900 dark:text-white">Service Provider</CardTitle>
                 <CardDescription className="text-gray-600 dark:text-gray-300">
-                  Submit your business pitch to the homeowner
+                  Register once and start scanning QR codes in the neighborhood
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
                 <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">
-                  Submit a Pitch
+                  Get Started
                 </Button>
               </CardContent>
             </Link>
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-blue-500">
-            <Link href="/create" onClick={() => handleRoleSelection('homeowner')}>
+            <Link href={`/homeowner/welcome/${id}`} onClick={() => handleRoleSelection('homeowner')}>
               <CardHeader className="text-center pb-3">
                 <div className="mx-auto w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-2">
                   <Home className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <CardTitle className="text-xl text-gray-900 dark:text-white">Homeowner</CardTitle>
                 <CardDescription className="text-gray-600 dark:text-gray-300">
-                  Create your own QR code to receive pitches
+                  Register to get notifications when service providers scan your QR code
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
                 <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                  Create QR Code
+                  Get ScanInstead Certified
                 </Button>
               </CardContent>
             </Link>

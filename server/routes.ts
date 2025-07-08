@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertHomeownerSchema, insertPitchSchema } from "@shared/schema";
+import { insertHomeownerSchema, insertPitchSchema, insertSalesmanSchema, insertScanTrackingSchema } from "@shared/schema";
 import { generateQRCode } from "./services/qr";
 import { sendPitchEmail } from "./services/email";
 import { sendPitchSMS } from "./services/sms";
@@ -165,6 +165,141 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(400).json({
         success: false,
         message: error instanceof Error ? error.message : 'Failed to submit pitch',
+      });
+    }
+  });
+
+  // Homeowner registration route
+  app.post("/api/homeowner/register/:id", async (req, res) => {
+    try {
+      const homeownerId = req.params.id;
+      const validatedData = insertHomeownerSchema.parse(req.body);
+      
+      const homeowner = await storage.registerHomeowner(homeownerId, validatedData);
+      
+      res.json({
+        success: true,
+        message: 'Homeowner registered successfully',
+        homeowner,
+      });
+    } catch (error) {
+      console.error('Error registering homeowner:', error);
+      res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to register homeowner',
+      });
+    }
+  });
+
+  // Salesman registration route
+  app.post("/api/salesman/register", async (req, res) => {
+    try {
+      const validatedData = insertSalesmanSchema.parse(req.body);
+      const salesman = await storage.createSalesman(validatedData);
+      
+      res.json({
+        success: true,
+        message: 'Salesman registered successfully',
+        salesman,
+      });
+    } catch (error) {
+      console.error('Error registering salesman:', error);
+      res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to register salesman',
+      });
+    }
+  });
+
+  // Get salesman data
+  app.get("/api/salesman/:id", async (req, res) => {
+    try {
+      const salesmanId = req.params.id;
+      const salesman = await storage.getSalesman(salesmanId);
+      
+      if (!salesman) {
+        return res.status(404).json({
+          success: false,
+          message: 'Salesman not found',
+        });
+      }
+      
+      res.json({
+        success: true,
+        salesman,
+      });
+    } catch (error) {
+      console.error('Error getting salesman:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get salesman',
+      });
+    }
+  });
+
+  // Get salesman scan history
+  app.get("/api/salesman/:id/scans", async (req, res) => {
+    try {
+      const salesmanId = req.params.id;
+      const scans = await storage.getScansBySalesman(salesmanId);
+      
+      res.json({
+        success: true,
+        scans,
+      });
+    } catch (error) {
+      console.error('Error getting salesman scans:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get scan history',
+      });
+    }
+  });
+
+  // Get salesman stats
+  app.get("/api/salesman/:id/stats", async (req, res) => {
+    try {
+      const salesmanId = req.params.id;
+      const stats = await storage.getSalesmanStats(salesmanId);
+      
+      res.json({
+        success: true,
+        stats,
+      });
+    } catch (error) {
+      console.error('Error getting salesman stats:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get stats',
+      });
+    }
+  });
+
+  // Track QR code scan
+  app.post("/api/scan/:homeownerId", async (req, res) => {
+    try {
+      const homeownerId = req.params.homeownerId;
+      const { salesmanId, location } = req.body;
+      
+      const scanData = {
+        homeownerId,
+        salesmanId,
+        location,
+      };
+      
+      const validatedData = insertScanTrackingSchema.parse(scanData);
+      const scan = await storage.createScanTracking(validatedData);
+      
+      res.json({
+        success: true,
+        message: 'Scan tracked successfully',
+        scan,
+      });
+    } catch (error) {
+      console.error('Error tracking scan:', error);
+      res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to track scan',
       });
     }
   });

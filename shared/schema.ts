@@ -4,9 +4,36 @@ export const homeownerSchema = z.object({
   id: z.string(),
   fullName: z.string().min(1, "Full name is required"),
   email: z.string().email("Valid email is required"),
+  phone: z.string().optional(),
+  isRegistered: z.boolean().default(false),
+  notificationPreference: z.enum(["email", "phone", "both"]).default("email"),
   createdAt: z.date(),
   qrUrl: z.string(),
   pitchUrl: z.string(),
+});
+
+// New schema for salesman accounts
+export const salesmanSchema = z.object({
+  id: z.string(),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  businessName: z.string().min(1, "Business name is required"),
+  businessType: z.string().optional(),
+  email: z.string().email("Valid email is required"),
+  phone: z.string().optional(),
+  isVerified: z.boolean().default(false),
+  totalScans: z.number().default(0),
+  createdAt: z.date(),
+  lastScanAt: z.date().optional(),
+});
+
+// Schema for tracking scans
+export const scanTrackingSchema = z.object({
+  id: z.string(),
+  salesmanId: z.string(),
+  homeownerId: z.string(),
+  scannedAt: z.date(),
+  location: z.string().optional(),
 });
 
 export const pitchSchema = z.object({
@@ -27,6 +54,23 @@ export const pitchSchema = z.object({
 export const insertHomeownerSchema = homeownerSchema.pick({
   fullName: true,
   email: true,
+  phone: true,
+  notificationPreference: true,
+});
+
+export const insertSalesmanSchema = salesmanSchema.pick({
+  firstName: true,
+  lastName: true,
+  businessName: true,
+  businessType: true,
+  email: true,
+  phone: true,
+});
+
+export const insertScanTrackingSchema = scanTrackingSchema.pick({
+  salesmanId: true,
+  homeownerId: true,
+  location: true,
 });
 
 export const insertPitchSchema = pitchSchema.pick({
@@ -43,5 +87,9 @@ export const insertPitchSchema = pitchSchema.pick({
 
 export type Homeowner = z.infer<typeof homeownerSchema>;
 export type Pitch = z.infer<typeof pitchSchema>;
+export type Salesman = z.infer<typeof salesmanSchema>;
+export type ScanTracking = z.infer<typeof scanTrackingSchema>;
 export type InsertHomeowner = z.infer<typeof insertHomeownerSchema>;
 export type InsertPitch = z.infer<typeof insertPitchSchema>;
+export type InsertSalesman = z.infer<typeof insertSalesmanSchema>;
+export type InsertScanTracking = z.infer<typeof insertScanTrackingSchema>;

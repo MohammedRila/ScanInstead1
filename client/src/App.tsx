@@ -15,6 +15,9 @@ import Create from "@/pages/create";
 import Pitch from "@/pages/pitch";
 import Success from "@/pages/success";
 import Landing from "@/pages/landing";
+import HomeownerWelcome from "@/pages/homeowner-welcome";
+import SalesmanRegister from "@/pages/salesman-register";
+import SalesmanDashboard from "@/pages/salesman-dashboard";
 
 function Router() {
   // Track page views when routes change
@@ -28,6 +31,9 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/create" component={Create} />
           <Route path="/l/:id" component={Landing} />
+          <Route path="/homeowner/welcome/:id" component={HomeownerWelcome} />
+          <Route path="/salesman/register" component={SalesmanRegister} />
+          <Route path="/salesman/dashboard/:id" component={SalesmanDashboard} />
           <Route path="/v/:id" component={Pitch} />
           <Route path="/success" component={Success} />
           <Route component={NotFound} />
