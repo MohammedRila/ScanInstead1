@@ -104,13 +104,15 @@ export default function Pitch() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background py-16">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">Loading...</div>
-            </CardContent>
-          </Card>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-32 w-32 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Briefcase className="h-8 w-8 text-blue-600 animate-pulse" />
+            </div>
+          </div>
+          <p className="text-lg text-gray-600 dark:text-gray-300">Loading pitch form...</p>
         </div>
       </div>
     );
@@ -118,17 +120,16 @@ export default function Pitch() {
 
   if (!homeowner && id !== "demo") {
     return (
-      <div className="min-h-screen bg-background py-16">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-                <h3 className="text-2xl font-bold mb-2">Invalid QR Code</h3>
-                <p className="text-muted-foreground">This QR code is not valid or has expired.</p>
-              </div>
-            </CardContent>
-          </Card>
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 dark:from-gray-900 dark:via-red-900/20 dark:to-gray-800 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="bg-gradient-to-br from-red-500 to-orange-500 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <AlertCircle className="h-12 w-12 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">QR Code Not Found</h1>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">This QR code is not valid or has expired. Please contact the homeowner for a new code.</p>
+          <Button asChild variant="outline" className="border-2">
+            <a href="/">Return to Home</a>
+          </Button>
         </div>
       </div>
     );

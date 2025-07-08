@@ -26,9 +26,14 @@ export default function SalesmanDashboard() {
 
   if (salesmanLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 dark:from-gray-900 dark:via-orange-900/20 dark:to-gray-800 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <div className="relative">
+            <div className="animate-spin rounded-full h-32 w-32 border-4 border-orange-200 border-t-orange-600 mx-auto mb-4"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <BarChart className="h-8 w-8 text-orange-600 animate-pulse" />
+            </div>
+          </div>
           <p className="text-lg text-gray-600 dark:text-gray-300">Loading your dashboard...</p>
         </div>
       </div>
@@ -52,52 +57,102 @@ export default function SalesmanDashboard() {
   const totalScans = salesman.totalScans || 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 dark:from-gray-900 dark:to-gray-800 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 dark:from-gray-900 dark:via-orange-900/20 dark:to-gray-800 py-8">
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Welcome back, {salesman.firstName}!
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-1">
-              {salesman.businessName} • {salesman.businessType}
-            </p>
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-12">
+          <div className="mb-4 lg:mb-0">
+            <div className="flex items-center gap-4 mb-3">
+              <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl w-16 h-16 flex items-center justify-center shadow-lg">
+                <Users className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                  Welcome back, {salesman.firstName}!
+                </h1>
+                <p className="text-gray-600 dark:text-gray-300 text-lg">
+                  {salesman.businessName} • {salesman.businessType}
+                </p>
+              </div>
+            </div>
           </div>
-          <Badge variant="secondary" className="bg-orange-100 text-orange-800">
-            {salesman.isVerified ? "Verified" : "Pending Verification"}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Badge variant="secondary" className={`px-4 py-2 text-sm font-medium ${
+              salesman.isVerified 
+                ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300" 
+                : "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300"
+            }`}>
+              {salesman.isVerified ? "✅ Verified" : "⏳ Pending Verification"}
+            </Badge>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{totalScans}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Total Scans</div>
+            </div>
+          </div>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Today's Scans</CardTitle>
-              <Target className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{todayScans}</div>
-              <p className="text-xs text-muted-foreground">QR codes scanned today</p>
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/30 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl w-12 h-12 flex items-center justify-center shadow-lg">
+                  <Target className="h-6 w-6 text-white" />
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{todayScans}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Today's Scans</div>
+                </div>
+              </div>
+              <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">QR codes scanned today</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">This Week</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{weekScans}</div>
-              <p className="text-xs text-muted-foreground">Scans this week</p>
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/30 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl w-12 h-12 flex items-center justify-center shadow-lg">
+                  <Calendar className="h-6 w-6 text-white" />
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-green-600 dark:text-green-400">{weekScans}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">This Week</div>
+                </div>
+              </div>
+              <p className="text-sm text-green-700 dark:text-green-300 font-medium">Scans this week</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">This Month</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/30 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl w-12 h-12 flex items-center justify-center shadow-lg">
+                  <TrendingUp className="h-6 w-6 text-white" />
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">{monthScans}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">This Month</div>
+                </div>
+              </div>
+              <p className="text-sm text-purple-700 dark:text-purple-300 font-medium">Monthly performance</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/50 dark:to-orange-900/30 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl w-12 h-12 flex items-center justify-center shadow-lg">
+                  <MapPin className="h-6 w-6 text-white" />
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">{totalScans}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Total Scans</div>
+                </div>
+              </div>
+              <p className="text-sm text-orange-700 dark:text-orange-300 font-medium">All-time total</p>
+            </CardContent>
+          </Card>
+        </div>
             <CardContent>
               <div className="text-2xl font-bold">{monthScans}</div>
               <p className="text-xs text-muted-foreground">Scans this month</p>
