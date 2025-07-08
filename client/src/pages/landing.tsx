@@ -3,19 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Home, Wrench } from "lucide-react";
 import { useEffect } from "react";
-import { trackEvent } from "@/lib/analytics";
 
 export default function Landing() {
   const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
     // Track landing page view
-    trackEvent('qr_code_scanned', 'engagement', 'landing_page_view');
+    console.log('Landing page loaded for ID:', id);
   }, [id]);
 
   const handleRoleSelection = (role: 'homeowner' | 'service_provider') => {
     // Track role selection
-    trackEvent('role_selected', 'engagement', role);
+    console.log('User selected role:', role);
   };
 
   return (
