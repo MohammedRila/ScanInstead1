@@ -132,6 +132,7 @@ Changelog:
 - July 08, 2025. Added dynamic landing page with homeowner/service provider selection
 - July 08, 2025. Implemented Google Analytics tracking for QR code scans and user flow
 - July 08, 2025. Updated QR code URLs to point to new landing page (/l/:id)
+- July 08, 2025. Configured automatic Replit domain detection for QR code generation
 - July 08, 2025. Migrated from Replit Agent to Replit environment
 - July 08, 2025. Switched email service from nodemailer/Gmail to Resend
 - July 06, 2025. Initial setup
