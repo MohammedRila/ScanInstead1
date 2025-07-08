@@ -45,13 +45,21 @@ export class FirebaseStorage implements IStorage {
       if (replSlug && replOwner) {
         baseUrl = `${replSlug}--${replOwner}.replit.app`;
         protocol = 'https';
-      } else if (process.env.BASE_URL && process.env.BASE_URL !== 'w') {
-        // Use BASE_URL only if it's not the malformed "w" value
-        baseUrl = process.env.BASE_URL.replace(/^https?:\/\//, '');
       } else {
-        // Final fallback to localhost
-        baseUrl = 'localhost:5000';
-        protocol = 'http';
+        // Try to detect from request headers or use a hardcoded replit domain
+        const replitSubdomain = process.env.REPLIT_SUBDOMAIN;
+        const replitCluster = process.env.REPLIT_CLUSTER;
+        if (replitSubdomain && replitCluster) {
+          baseUrl = `${replitSubdomain}.${replitCluster}.replit.dev`;
+          protocol = 'https';
+        } else if (process.env.BASE_URL && process.env.BASE_URL !== 'w') {
+          // Use BASE_URL only if it's not the malformed "w" value
+          baseUrl = process.env.BASE_URL.replace(/^https?:\/\//, '');
+        } else {
+          // Final fallback to localhost
+          baseUrl = 'localhost:5000';
+          protocol = 'http';
+        }
       }
     }
     

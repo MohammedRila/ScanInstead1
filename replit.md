@@ -135,13 +135,16 @@ Required environment variables:
 
 ```
 Changelog:
+- July 08, 2025. Successfully migrated from Replit Agent to Replit environment with improved security and stability
+- July 08, 2025. Fixed QR code URL generation to use proper Replit domain instead of localhost
+- July 08, 2025. Installed required packages (tsx) for TypeScript execution
+- July 08, 2025. Configured environment variables for Firebase, Resend, and Hugging Face integration
 - July 08, 2025. Integrated Hugging Face AI for intelligent pitch analysis and spam detection
 - July 08, 2025. Added AI-powered homeowner dashboard with sentiment analysis and business insights
 - July 08, 2025. Implemented automatic pitch categorization and urgency detection using AI
 - July 08, 2025. Enhanced database schema to store AI analysis results (sentiment, confidence, business type detection)
 - July 08, 2025. Added smart content filtering and spam detection to protect homeowners
 - July 08, 2025. Enhanced UI creativity throughout the app with modern gradients, animations, and visual elements
-- July 08, 2025. Migrated successfully from Replit Agent to Replit environment with improved security
 - July 08, 2025. Updated all pages with professional, modern design language and better UX
 - July 08, 2025. Implemented complete business registration system with one-time homeowner/salesman accounts
 - July 08, 2025. Added salesman dashboard with scan tracking and analytics (daily/weekly/monthly stats)
