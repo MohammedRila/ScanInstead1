@@ -1,6 +1,6 @@
 import { HfInference } from '@huggingface/inference';
 
-const hf = new HfInference(process.env.HUGGING_FACE_API_KEY);
+const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
 export interface PitchAnalysis {
   sentiment: 'positive' | 'neutral' | 'negative';
