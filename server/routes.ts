@@ -109,36 +109,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get pitches for homeowner with data intelligence
+  // Get pitches for homeowner (fast loading for dashboard)
   app.get("/api/homeowner/:id/pitches", async (req, res) => {
     try {
       const pitches = await storage.getPitchesByHomeowner(req.params.id);
       
-      // Perform data intelligence analysis (hidden from frontend)
-      try {
-        const intelligenceAnalysis = await performDataIntelligenceAnalysis(pitches.pitches || []);
-        
-        // Log intelligence insights for internal use (not exposed to frontend)
-        console.log('🧠 Data Intelligence Analysis:', {
-          cleanup_stats: intelligenceAnalysis.cleanup?.cleanup_stats,
-          deduplication_stats: intelligenceAnalysis.deduplication?.deduplication_stats,
-          anomaly_stats: intelligenceAnalysis.anomalies?.anomaly_stats
-        });
-        
-        // Use enriched data if available
-        if (intelligenceAnalysis.enriched_entries) {
-          pitches.pitches = intelligenceAnalysis.enriched_entries;
-        }
-        
-        // Filter out duplicates automatically
-        if (intelligenceAnalysis.deduplication?.unique_entries) {
-          pitches.pitches = intelligenceAnalysis.deduplication.unique_entries;
-        }
-        
-      } catch (intelligenceError) {
-        console.error('Data intelligence analysis failed:', intelligenceError);
-        // Continue with regular response if intelligence fails
-      }
+      // Skip heavy data intelligence analysis for dashboard loading
+      // Intelligence analysis runs in background monitoring instead
       
       res.json({
         success: true,
