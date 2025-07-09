@@ -1,9 +1,10 @@
-modules = ["nodejs-20", "web"]
+modules = ["nodejs-20", "web", "python-3.11"]
 run = "npm run dev"
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
+packages = ["freetype", "glibcLocales", "gumbo", "harfbuzz", "jbig2dec", "lcms2", "libimagequant", "libjpeg", "libjpeg_turbo", "libtiff", "libwebp", "libxcrypt", "mupdf", "ocl-icd", "opencl-headers", "openjpeg", "python311", "python311Packages.pip", "swig", "tcl", "tesseract", "tk", "xcbuild", "zlib"]
 
 [deployment]
 deploymentTarget = "autoscale"

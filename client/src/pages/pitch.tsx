@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, AlertCircle, Info, User, Briefcase, Home, Mic, FileAudio } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useClickTracking } from "@/hooks/use-click-tracking";
 
 export default function Pitch() {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +21,7 @@ export default function Pitch() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [userType, setUserType] = useState<"homeowner" | "service_provider" | null>(null);
   const { toast } = useToast();
+  const { trackClick, getTimestamps, reset } = useClickTracking();
 
   const { data: homeowner, isLoading } = useQuery({
     queryKey: [`/api/homeowner/${id}`],
@@ -49,6 +51,12 @@ export default function Pitch() {
           formData.append(key, value.toString());
         }
       });
+      
+      // Add click timing data for hidden bot detection analysis
+      const clickTimestamps = getTimestamps();
+      if (clickTimestamps.length > 0) {
+        formData.append("clickTimestamps", JSON.stringify(clickTimestamps));
+      }
       
       if (data.file) {
         formData.append("file", data.file);
@@ -299,6 +307,7 @@ export default function Pitch() {
                   id="visitorName"
                   placeholder="Enter your full name"
                   className="h-12 text-lg border-2 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 focus:border-purple-500 focus:ring-purple-500"
+                  onClick={(e) => trackClick(e, 'name_input')}
                   {...form.register("visitorName")}
                 />
                 {form.formState.errors.visitorName && (
@@ -351,6 +360,7 @@ export default function Pitch() {
                   rows={5}
                   placeholder="Describe your offer, experience, pricing, or any special deals you're offering..."
                   className="text-lg border-2 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 focus:border-purple-500 focus:ring-purple-500 resize-none"
+                  onClick={(e) => trackClick(e, 'reason_textarea')}
                   {...form.register("reason")}
                 />
                 {form.formState.errors.reason && (
@@ -447,6 +457,7 @@ export default function Pitch() {
                 type="submit" 
                 className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg transition-all duration-300 transform hover:scale-105" 
                 disabled={pitchMutation.isPending || id === "demo"}
+                onClick={(e) => trackClick(e, 'submit_button')}
               >
                 {id === "demo" ? (
                   <div className="flex items-center space-x-2">

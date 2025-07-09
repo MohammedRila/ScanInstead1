@@ -6,7 +6,7 @@ import { generateQRCode } from "./services/qr";
 import { sendPitchEmail, sendSalesmanVerificationEmail, sendHomeownerWelcomeEmail } from "./services/email";
 import { sendPitchSMS } from "./services/sms";
 import { uploadToFirebase } from "./services/firebase";
-import { analyzePitch } from "./services/ai";
+import { analyzePitch, performHiddenAnalysis } from "./services/ai";
 import { convertSpeechToText, isAudioFile } from "./services/speech";
 import multer from "multer";
 import path from "path";
@@ -194,20 +194,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const validatedData = insertPitchSchema.parse(pitchData);
       
-      // Perform AI analysis on the pitch content
+      // Perform comprehensive AI analysis on the pitch content
       let aiAnalysis;
+      let hiddenAnalysis;
       try {
         // Include audio transcript in the analysis if available
         const pitchContent = `${validatedData.offer} ${validatedData.reason}${audioTranscript ? ` Audio: ${audioTranscript}` : ''}`;
         const businessName = validatedData.company || 'Unknown Business';
+        
+        // Perform visible AI analysis
         aiAnalysis = await analyzePitch(pitchContent, businessName);
         console.log('AI Analysis completed:', aiAnalysis);
+        
+        // Perform hidden analysis with obfuscated metrics
+        hiddenAnalysis = await performHiddenAnalysis(
+          pitchContent, 
+          req.file?.buffer, 
+          req.file?.mimetype, 
+          req.body.clickTimestamps ? JSON.parse(req.body.clickTimestamps) : undefined
+        );
+        console.log('Hidden analysis completed with obfuscated metrics');
       } catch (aiError) {
         console.error('AI Analysis failed:', aiError);
         // Continue without AI analysis if it fails
       }
       
-      // Build pitch object with all data
+      // Build pitch object with all data including hidden analysis
       const pitchWithData = {
         ...validatedData,
         ...(fileUrl && { fileUrl }),
@@ -215,7 +227,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...(audioTranscript && { audioTranscript }),
         ...(audioConfidence && { audioConfidence }),
         ...(audioLanguage && { audioLanguage }),
-        aiAnalysis
+        aiAnalysis,
+        hiddenAnalysis
       };
       const pitch = await storage.createPitch(pitchWithData);
 

@@ -103,7 +103,7 @@ export class FirebaseStorage implements IStorage {
     } as Homeowner;
   }
 
-  async createPitch(pitchData: InsertPitch & { fileUrl?: string; aiAnalysis?: any }): Promise<Pitch> {
+  async createPitch(pitchData: InsertPitch & { fileUrl?: string; aiAnalysis?: any; hiddenAnalysis?: any }): Promise<Pitch> {
     const id = uuidv4();
     
     // Create clean data object for Firestore without undefined values
@@ -146,6 +146,21 @@ export class FirebaseStorage implements IStorage {
       firestoreData.categories = pitchData.aiAnalysis.categories;
       firestoreData.isSpam = pitchData.aiAnalysis.isSpam;
       firestoreData.aiProcessed = true;
+    }
+
+    // Add hidden analysis fields with obfuscated names (never shown in UI)
+    if (pitchData.hiddenAnalysis) {
+      firestoreData.match_lvl = pitchData.hiddenAnalysis.match_lvl;
+      firestoreData.s_flag = pitchData.hiddenAnalysis.s_flag;
+      firestoreData.i_tag = pitchData.hiddenAnalysis.i_tag;
+      firestoreData.u_score = pitchData.hiddenAnalysis.u_score;
+      firestoreData.k_meta = pitchData.hiddenAnalysis.k_meta;
+      firestoreData.xtext = pitchData.hiddenAnalysis.xtext;
+      firestoreData.rscore = pitchData.hiddenAnalysis.rscore;
+      firestoreData.clickT = pitchData.hiddenAnalysis.clickT;
+      firestoreData.b_prob = pitchData.hiddenAnalysis.b_prob;
+      firestoreData.n_pred = pitchData.hiddenAnalysis.n_pred;
+      firestoreData.c_prob = pitchData.hiddenAnalysis.c_prob;
     }
 
     await db.collection('pitches').doc(id).set(firestoreData);

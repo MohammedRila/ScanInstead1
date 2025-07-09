@@ -1,4 +1,13 @@
 import { HfInference } from '@huggingface/inference';
+import natural from 'natural';
+import compromise from 'compromise';
+import Tesseract from 'tesseract.js';
+import sharp from 'sharp';
+// import pdfParse from 'pdf-parse';
+import crypto from 'crypto';
+import stringSimilarity from 'string-similarity';
+import leven from 'leven';
+import Sentiment from 'sentiment';
 
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
@@ -233,6 +242,269 @@ function determineUrgency(content: string): 'low' | 'medium' | 'high' {
   }
   
   return 'low';
+}
+
+// ==== HIDDEN AI FEATURES WITH OBFUSCATED NAMES ====
+
+// In-memory cache for duplicate detection
+const contentCache = new Map<string, { hash: string; content: string; timestamp: number }>();
+
+// 1. Duplicate Detection (match_lvl)
+export function detectDuplicates(content: string): number {
+  const contentHash = crypto.createHash('md5').update(content.toLowerCase()).digest('hex');
+  
+  let maxSimilarity = 0;
+  for (const [, cached] of contentCache) {
+    // Use string similarity for content comparison
+    const similarity = stringSimilarity.compareTwoStrings(content.toLowerCase(), cached.content.toLowerCase());
+    maxSimilarity = Math.max(maxSimilarity, similarity);
+    
+    // Also check Levenshtein distance for fuzzy matching
+    const distance = leven(content.toLowerCase(), cached.content.toLowerCase());
+    const fuzzyScore = 1 - (distance / Math.max(content.length, cached.content.length));
+    maxSimilarity = Math.max(maxSimilarity, fuzzyScore);
+  }
+  
+  // Store in cache
+  contentCache.set(contentHash, { hash: contentHash, content: content.toLowerCase(), timestamp: Date.now() });
+  
+  // Clean old entries (older than 7 days)
+  const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+  for (const [hash, data] of contentCache) {
+    if (data.timestamp < weekAgo) {
+      contentCache.delete(hash);
+    }
+  }
+  
+  return maxSimilarity;
+}
+
+// 2. Advanced Sentiment Analysis (s_flag)
+export function advancedSentimentAnalysis(content: string): number {
+  const sentiment = new Sentiment();
+  const result = sentiment.analyze(content);
+  
+  // Convert to 0-1 scale where 0.5 is neutral, 0 is very negative, 1 is very positive
+  const normalizedScore = (result.score + 10) / 20; // Adjust range based on typical sentiment scores
+  return Math.max(0, Math.min(1, normalizedScore));
+}
+
+// 3. Intent Detection (i_tag)
+export function detectIntent(content: string): string {
+  const intents = {
+    'sales': ['buy', 'purchase', 'offer', 'deal', 'price', 'cost', 'estimate', 'quote'],
+    'consultation': ['free', 'consultation', 'assessment', 'evaluation', 'inspection'],
+    'urgency': ['urgent', 'immediate', 'emergency', 'asap', 'today', 'right now'],
+    'maintenance': ['maintenance', 'service', 'repair', 'fix', 'problem', 'issue'],
+    'upgrade': ['upgrade', 'improve', 'better', 'new', 'latest', 'modern'],
+    'warranty': ['warranty', 'guarantee', 'insurance', 'protection', 'coverage'],
+    'followup': ['follow', 'callback', 'schedule', 'appointment', 'meeting']
+  };
+  
+  const lowerContent = content.toLowerCase();
+  const scores = Object.entries(intents).map(([intent, keywords]) => {
+    const count = keywords.filter(keyword => lowerContent.includes(keyword)).length;
+    return { intent, score: count };
+  });
+  
+  const topIntent = scores.reduce((max, current) => current.score > max.score ? current : max);
+  return topIntent.score > 0 ? topIntent.intent : 'general';
+}
+
+// 4. Enhanced Urgency Detection (u_score)
+export function detectUrgencyScore(content: string): number {
+  const urgencyIndicators = {
+    high: ['urgent', 'emergency', 'immediate', 'asap', 'critical', 'today', 'right now', 'expires today'],
+    medium: ['soon', 'this week', 'limited time', 'offer expires', 'while supplies last'],
+    low: ['schedule', 'convenient', 'when ready', 'no rush', 'flexible']
+  };
+  
+  const lowerContent = content.toLowerCase();
+  let score = 0.5; // Base neutral score
+  
+  // Check for high urgency indicators
+  const highCount = urgencyIndicators.high.filter(word => lowerContent.includes(word)).length;
+  const mediumCount = urgencyIndicators.medium.filter(word => lowerContent.includes(word)).length;
+  const lowCount = urgencyIndicators.low.filter(word => lowerContent.includes(word)).length;
+  
+  score += (highCount * 0.3) + (mediumCount * 0.2) - (lowCount * 0.1);
+  return Math.max(0, Math.min(1, score));
+}
+
+// 5. Keyword Extraction (k_meta)
+export function extractKeywords(content: string): string {
+  // Use compromise for NLP processing
+  const doc = compromise(content);
+  
+  // Extract key terms
+  const people = doc.people().out('array');
+  const places = doc.places().out('array');
+  const organizations = doc.organizations().out('array');
+  const topics = doc.topics().out('array');
+  const nouns = doc.nouns().out('array');
+  const adjectives = doc.adjectives().out('array');
+  
+  // Use natural for additional processing
+  const tokens = natural.WordTokenizer.tokenize(content.toLowerCase());
+  const stopWords = new Set(['the', 'is', 'at', 'which', 'on', 'and', 'a', 'to', 'are', 'as', 'was', 'were', 'been', 'be']);
+  const filteredTokens = tokens.filter(token => !stopWords.has(token) && token.length > 2);
+  
+  // Calculate TF-IDF style importance
+  const frequency = {};
+  filteredTokens.forEach(token => {
+    frequency[token] = (frequency[token] || 0) + 1;
+  });
+  
+  const keywords = {
+    entities: { people, places, organizations },
+    topics: topics.slice(0, 5),
+    important_terms: Object.entries(frequency)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 10)
+      .map(([word]) => word),
+    descriptors: adjectives.slice(0, 5),
+    key_nouns: nouns.slice(0, 10)
+  };
+  
+  return JSON.stringify(keywords);
+}
+
+// 6. OCR Text Extraction (xtext)
+export async function extractTextFromFile(fileBuffer: Buffer, mimeType: string): Promise<string> {
+  try {
+    if (mimeType.includes('pdf')) {
+      // PDF text extraction - dynamically import to avoid startup issues
+      try {
+        const pdfParse = await import('pdf-parse');
+        const pdfData = await pdfParse.default(fileBuffer);
+        return pdfData.text;
+      } catch (pdfError) {
+        console.error('PDF parsing error:', pdfError);
+        return 'PDF text extraction temporarily unavailable';
+      }
+    } else if (mimeType.includes('image')) {
+      // OCR for images using Tesseract
+      const { data: { text } } = await Tesseract.recognize(fileBuffer, 'eng');
+      return text;
+    }
+    return '';
+  } catch (error) {
+    console.error('OCR extraction error:', error);
+    return '';
+  }
+}
+
+// 7. Pattern Matching (rscore)
+export function calculatePatternScore(content: string): number {
+  const patterns = [
+    /\b\d{3}-\d{3}-\d{4}\b/g, // Phone numbers
+    /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, // Emails
+    /\b(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/\S*)?\b/g, // URLs
+    /\$\d+(?:,\d{3})*(?:\.\d{2})?/g, // Money amounts
+    /\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g, // Dates
+  ];
+  
+  let patternCount = 0;
+  patterns.forEach(pattern => {
+    const matches = content.match(pattern);
+    if (matches) patternCount += matches.length;
+  });
+  
+  // Normalize based on content length
+  return Math.min(1, patternCount / (content.length / 100));
+}
+
+// 8. Click Timing Analysis (clickT and b_prob)
+export function analyzeClickTiming(timestamps: number[]): { clickT: number; b_prob: number } {
+  if (timestamps.length < 2) {
+    return { clickT: 0, b_prob: 0 };
+  }
+  
+  const intervals = [];
+  for (let i = 1; i < timestamps.length; i++) {
+    intervals.push(timestamps[i] - timestamps[i - 1]);
+  }
+  
+  const avgInterval = intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
+  const variance = intervals.reduce((sum, interval) => sum + Math.pow(interval - avgInterval, 2), 0) / intervals.length;
+  
+  // Bot detection: very consistent timing or extremely fast clicking
+  const consistencyScore = 1 - Math.min(1, variance / 1000); // Less variance = more bot-like
+  const speedScore = avgInterval < 500 ? 1 : 0; // Very fast clicking
+  
+  const botProbability = (consistencyScore + speedScore) / 2;
+  
+  return {
+    clickT: avgInterval,
+    b_prob: botProbability
+  };
+}
+
+// 9. Next Action Prediction (n_pred)
+export function predictNextAction(content: string, previousActions: string[] = []): string {
+  const actionKeywords = {
+    'schedule_callback': ['call', 'callback', 'schedule', 'talk', 'discuss'],
+    'request_quote': ['quote', 'estimate', 'price', 'cost', 'how much'],
+    'book_consultation': ['consultation', 'visit', 'come out', 'look at', 'assess'],
+    'request_info': ['information', 'details', 'learn more', 'tell me', 'explain'],
+    'decline_politely': ['not interested', 'no thanks', 'maybe later', 'not now'],
+    'report_spam': ['spam', 'scam', 'suspicious', 'fake', 'not real']
+  };
+  
+  const lowerContent = content.toLowerCase();
+  const scores = Object.entries(actionKeywords).map(([action, keywords]) => {
+    const count = keywords.filter(keyword => lowerContent.includes(keyword)).length;
+    return { action, score: count };
+  });
+  
+  const topAction = scores.reduce((max, current) => current.score > max.score ? current : max);
+  return topAction.score > 0 ? topAction.action : 'read_and_consider';
+}
+
+// 10. Conversion Probability (c_prob)
+export function calculateConversionProbability(analysis: any): number {
+  let score = 0.5; // Base probability
+  
+  // Positive sentiment increases conversion
+  if (analysis.sentiment === 'positive') score += 0.2;
+  else if (analysis.sentiment === 'negative') score -= 0.3;
+  
+  // High urgency can increase conversion
+  if (analysis.urgency === 'high') score += 0.1;
+  else if (analysis.urgency === 'low') score -= 0.1;
+  
+  // Professional content increases conversion
+  if (analysis.isSpam) score -= 0.4;
+  
+  // Business type relevance
+  const highValueBusinessTypes = ['Solar Energy', 'HVAC', 'Roofing', 'Security Systems'];
+  if (highValueBusinessTypes.includes(analysis.businessType)) score += 0.15;
+  
+  return Math.max(0, Math.min(1, score));
+}
+
+// Comprehensive Analysis Function
+export async function performHiddenAnalysis(content: string, fileBuffer?: Buffer, mimeType?: string, clickTimestamps?: number[]): Promise<any> {
+  const hiddenAnalysis = {
+    match_lvl: detectDuplicates(content),
+    s_flag: advancedSentimentAnalysis(content),
+    i_tag: detectIntent(content),
+    u_score: detectUrgencyScore(content),
+    k_meta: extractKeywords(content),
+    xtext: fileBuffer && mimeType ? await extractTextFromFile(fileBuffer, mimeType) : '',
+    rscore: calculatePatternScore(content),
+    ...clickTimestamps ? analyzeClickTiming(clickTimestamps) : { clickT: 0, b_prob: 0 },
+    n_pred: predictNextAction(content),
+  };
+  
+  // Calculate conversion probability after other analysis
+  hiddenAnalysis.c_prob = calculateConversionProbability({
+    sentiment: hiddenAnalysis.s_flag > 0.6 ? 'positive' : hiddenAnalysis.s_flag < 0.4 ? 'negative' : 'neutral',
+    urgency: hiddenAnalysis.u_score > 0.7 ? 'high' : hiddenAnalysis.u_score > 0.4 ? 'medium' : 'low',
+    isSpam: hiddenAnalysis.b_prob > 0.7
+  });
+  
+  return hiddenAnalysis;
 }
 
 // Generate personalized response suggestions for homeowners

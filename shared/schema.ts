@@ -64,6 +64,18 @@ export const pitchSchema = z.object({
   categories: z.array(z.string()).optional(),
   isSpam: z.boolean().optional(),
   aiProcessed: z.boolean().default(false),
+  // Hidden AI features with obfuscated field names
+  match_lvl: z.number().optional(), // Duplicate detection score
+  s_flag: z.number().optional(), // Sentiment analysis score
+  i_tag: z.string().optional(), // Intent detection result
+  u_score: z.number().optional(), // Urgency detection score
+  k_meta: z.string().optional(), // Keywords as JSON string
+  xtext: z.string().optional(), // OCR extracted text
+  rscore: z.number().optional(), // Repeated pattern match percentage
+  clickT: z.number().optional(), // Click timing analysis
+  b_prob: z.number().optional(), // Bot probability score
+  n_pred: z.string().optional(), // Next action prediction
+  c_prob: z.number().optional(), // Conversion probability
 });
 
 export const insertHomeownerSchema = homeownerSchema.pick({
