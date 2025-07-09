@@ -7,6 +7,7 @@ import { sendPitchEmail } from "./services/email";
 import { sendPitchSMS } from "./services/sms";
 import { uploadToFirebase } from "./services/firebase";
 import { analyzePitch } from "./services/ai";
+import { convertSpeechToText, isAudioFile } from "./services/speech";
 import multer from "multer";
 import path from "path";
 import { promises as fs } from "fs";
@@ -130,12 +131,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       let fileUrl: string | undefined;
       let fileName: string | undefined;
+      let audioUrl: string | undefined;
+      let audioFileName: string | undefined;
+      let audioTranscript: string | undefined;
+      let audioConfidence: number | undefined;
+      let audioLanguage: string | undefined;
 
       // Upload file to Firebase Storage if provided
       if (req.file) {
         try {
           fileUrl = await uploadToFirebase(req.file);
           fileName = req.file.originalname;
+          
+          // Check if the uploaded file is an audio file
+          if (isAudioFile(req.file.mimetype)) {
+            audioUrl = fileUrl;
+            audioFileName = fileName;
+            
+            // Convert speech to text
+            try {
+              console.log('Converting audio to text...');
+              const speechResult = await convertSpeechToText(req.file);
+              audioTranscript = speechResult.transcript;
+              audioConfidence = speechResult.confidence;
+              audioLanguage = speechResult.languageCode;
+              
+              console.log('Speech-to-text conversion successful:', {
+                transcript: audioTranscript,
+                confidence: audioConfidence,
+                language: audioLanguage
+              });
+            } catch (speechError) {
+              console.error('Speech-to-text conversion failed:', speechError);
+              // Continue without speech-to-text if it fails
+            }
+          }
         } catch (uploadError) {
           console.error('Error uploading file:', uploadError);
           return res.status(500).json({
@@ -149,6 +179,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         homeownerId,
         fileName: fileName || "",
+        audioFileName: audioFileName || "",
       };
 
       const validatedData = insertPitchSchema.parse(pitchData);
@@ -156,7 +187,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Perform AI analysis on the pitch content
       let aiAnalysis;
       try {
-        const pitchContent = `${validatedData.offer} ${validatedData.reason}`;
+        // Include audio transcript in the analysis if available
+        const pitchContent = `${validatedData.offer} ${validatedData.reason}${audioTranscript ? ` Audio: ${audioTranscript}` : ''}`;
         const businessName = validatedData.company || 'Unknown Business';
         aiAnalysis = await analyzePitch(pitchContent, businessName);
         console.log('AI Analysis completed:', aiAnalysis);
@@ -165,9 +197,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Continue without AI analysis if it fails
       }
       
-      // Only include fileUrl if it exists
-      const pitchWithFile = fileUrl ? { ...validatedData, fileUrl, aiAnalysis } : { ...validatedData, aiAnalysis };
-      const pitch = await storage.createPitch(pitchWithFile);
+      // Build pitch object with all data
+      const pitchWithData = {
+        ...validatedData,
+        ...(fileUrl && { fileUrl }),
+        ...(audioUrl && { audioUrl }),
+        ...(audioTranscript && { audioTranscript }),
+        ...(audioConfidence && { audioConfidence }),
+        ...(audioLanguage && { audioLanguage }),
+        aiAnalysis
+      };
+      const pitch = await storage.createPitch(pitchWithData);
 
       // Send email notification
       try {

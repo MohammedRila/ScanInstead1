@@ -144,6 +144,9 @@ Required environment variables:
 Changelog:
 - July 09, 2025. Successfully migrated from Replit Agent to Replit environment with improved security and stability - VERIFIED working
 - July 09, 2025. Switched email service from Resend to Gmail SMTP with Nodemailer for unrestricted email delivery - VERIFIED working
+- July 09, 2025. Added speech-to-text functionality using Google Cloud Speech API for audio pitch conversion - VERIFIED working
+- July 09, 2025. Enhanced pitch form to support audio file uploads with automatic transcription
+- July 09, 2025. Updated homeowner dashboard to display audio transcripts with confidence scores and language detection
 - July 09, 2025. Prepared app for Render deployment with production-ready configuration and environment variables
 - July 08, 2025. Successfully migrated from Replit Agent to Replit environment with improved security and stability
 - July 08, 2025. Fixed QR code URL generation to use proper Replit domain instead of localhost

@@ -49,6 +49,12 @@ export const pitchSchema = z.object({
   fileName: z.string().optional(),
   userType: z.enum(["homeowner", "service_provider"]).default("service_provider"),
   createdAt: z.date(),
+  // Audio/Speech fields
+  audioUrl: z.string().optional(),
+  audioFileName: z.string().optional(),
+  audioTranscript: z.string().optional(),
+  audioConfidence: z.number().optional(),
+  audioLanguage: z.string().optional(),
   // AI Analysis fields
   sentiment: z.enum(['positive', 'neutral', 'negative']).optional(),
   sentimentConfidence: z.number().optional(),
@@ -91,6 +97,7 @@ export const insertPitchSchema = pitchSchema.pick({
   visitorEmail: true,
   visitorPhone: true,
   fileName: true,
+  audioFileName: true,
   userType: true,
 });
 
