@@ -145,7 +145,7 @@ Changelog:
 - July 09, 2025. Successfully migrated project from Replit Agent to Replit environment - VERIFIED working
 - July 09, 2025. Configured all required environment variables (Firebase, Gmail, Hugging Face) for full functionality
 - July 09, 2025. Verified Express server running on port 5000 with Vite development environment
-- July 09, 2025. Removed Google Cloud Speech API dependency as speech-to-text feature not currently needed
+- July 09, 2025. Removed Google Cloud Speech API dependency and speech-to-text functionality as not currently needed
 - July 09, 2025. Implemented comprehensive hidden AI analysis system with 10 advanced features using completely free open-source tools - VERIFIED working
 - July 09, 2025. Added obfuscated field names (match_lvl, s_flag, i_tag, u_score, k_meta, xtext, rscore, clickT, b_prob, n_pred, c_prob) for stealth analytics
 - July 09, 2025. Integrated duplicate detection, advanced sentiment analysis, intent detection, urgency scoring, keyword extraction with compromise/natural
@@ -158,9 +158,7 @@ Changelog:
 - July 09, 2025. Homeowner registration and QR code creation now sends welcome emails with setup instructions and QR code access
 - July 09, 2025. Successfully migrated from Replit Agent to Replit environment with improved security and stability - VERIFIED working
 - July 09, 2025. Switched email service from Resend to Gmail SMTP with Nodemailer for unrestricted email delivery - VERIFIED working
-- July 09, 2025. Added speech-to-text functionality using Google Cloud Speech API for audio pitch conversion - VERIFIED working
-- July 09, 2025. Enhanced pitch form to support audio file uploads with automatic transcription
-- July 09, 2025. Updated homeowner dashboard to display audio transcripts with confidence scores and language detection
+- July 09, 2025. Removed speech-to-text functionality to simplify the application as requested by user
 - July 09, 2025. Prepared app for Render deployment with production-ready configuration and environment variables
 - July 08, 2025. Successfully migrated from Replit Agent to Replit environment with improved security and stability
 - July 08, 2025. Fixed QR code URL generation to use proper Replit domain instead of localhost

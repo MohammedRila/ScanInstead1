@@ -7,7 +7,7 @@ import { sendPitchEmail, sendSalesmanVerificationEmail, sendHomeownerWelcomeEmai
 import { sendPitchSMS } from "./services/sms";
 import { uploadToFirebase } from "./services/firebase";
 import { analyzePitch, performHiddenAnalysis } from "./services/ai";
-import { convertSpeechToText, isAudioFile } from "./services/speech";
+
 import multer from "multer";
 import path from "path";
 import { promises as fs } from "fs";
@@ -33,11 +33,10 @@ const upload = multer({
       'text/plain', 'text/csv',
       // Videos (for service demo videos)
       'video/mp4', 'video/avi', 'video/mov', 'video/wmv',
-      // Audio (for voice pitches)
-      'audio/mp3', 'audio/wav', 'audio/m4a', 'audio/mpeg'
+
     ];
     
-    const allowedExtensions = /\.(jpeg|jpg|png|gif|webp|bmp|pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv|mp4|avi|mov|wmv|mp3|wav|m4a)$/i;
+    const allowedExtensions = /\.(jpeg|jpg|png|gif|webp|bmp|pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv|mp4|avi|mov|wmv)$/i;
     
     const hasValidMimeType = allowedMimeTypes.includes(file.mimetype);
     const hasValidExtension = allowedExtensions.test(file.originalname);
@@ -45,7 +44,7 @@ const upload = multer({
     if (hasValidMimeType && hasValidExtension) {
       return cb(null, true);
     } else {
-      cb(new Error('File type not supported. Please upload images, documents (PDF, Word, Excel, PowerPoint), videos, or audio files.'));
+      cb(new Error('File type not supported. Please upload images, documents (PDF, Word, Excel, PowerPoint), or videos.'));
     }
   },
 });
@@ -141,41 +140,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       let fileUrl: string | undefined;
       let fileName: string | undefined;
-      let audioUrl: string | undefined;
-      let audioFileName: string | undefined;
-      let audioTranscript: string | undefined;
-      let audioConfidence: number | undefined;
-      let audioLanguage: string | undefined;
 
       // Upload file to Firebase Storage if provided
       if (req.file) {
         try {
           fileUrl = await uploadToFirebase(req.file);
           fileName = req.file.originalname;
-          
-          // Check if the uploaded file is an audio file
-          if (isAudioFile(req.file.mimetype)) {
-            audioUrl = fileUrl;
-            audioFileName = fileName;
-            
-            // Convert speech to text
-            try {
-              console.log('Converting audio to text...');
-              const speechResult = await convertSpeechToText(req.file);
-              audioTranscript = speechResult.transcript;
-              audioConfidence = speechResult.confidence;
-              audioLanguage = speechResult.languageCode;
-              
-              console.log('Speech-to-text conversion successful:', {
-                transcript: audioTranscript,
-                confidence: audioConfidence,
-                language: audioLanguage
-              });
-            } catch (speechError) {
-              console.error('Speech-to-text conversion failed:', speechError);
-              // Continue without speech-to-text if it fails
-            }
-          }
         } catch (uploadError) {
           console.error('Error uploading file:', uploadError);
           return res.status(500).json({
@@ -189,7 +159,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         homeownerId,
         fileName: fileName || "",
-        audioFileName: audioFileName || "",
       };
 
       const validatedData = insertPitchSchema.parse(pitchData);
@@ -198,8 +167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let aiAnalysis;
       let hiddenAnalysis;
       try {
-        // Include audio transcript in the analysis if available
-        const pitchContent = `${validatedData.offer} ${validatedData.reason}${audioTranscript ? ` Audio: ${audioTranscript}` : ''}`;
+        const pitchContent = `${validatedData.offer} ${validatedData.reason}`;
         const businessName = validatedData.company || 'Unknown Business';
         
         // Perform visible AI analysis
@@ -223,10 +191,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const pitchWithData = {
         ...validatedData,
         ...(fileUrl && { fileUrl }),
-        ...(audioUrl && { audioUrl }),
-        ...(audioTranscript && { audioTranscript }),
-        ...(audioConfidence && { audioConfidence }),
-        ...(audioLanguage && { audioLanguage }),
         aiAnalysis,
         hiddenAnalysis
       };

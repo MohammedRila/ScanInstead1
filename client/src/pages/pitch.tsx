@@ -108,20 +108,11 @@ export default function Pitch() {
       }
       setSelectedFile(file);
       
-      // If it's an audio file, show a special message
-      if (file.type.startsWith('audio/')) {
-        toast({
-          title: "Audio file detected",
-          description: "Your audio will be converted to text automatically when you submit the pitch",
-          variant: "default",
-        });
-      }
+
     }
   };
 
-  const isAudioFile = (file: File) => {
-    return file.type.startsWith('audio/');
-  };
+
 
   if (isLoading) {
     return (
@@ -370,20 +361,15 @@ export default function Pitch() {
               
               <div className="space-y-3">
                 <Label htmlFor="file" className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Attach Files or Record Audio <span className="text-gray-500 dark:text-gray-400 font-normal">(optional)</span>
+                  Attach Files <span className="text-gray-500 dark:text-gray-400 font-normal">(optional)</span>
                 </Label>
                 <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-8 text-center hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-950/50 transition-all duration-300">
                   <div className="bg-gradient-to-br from-purple-500 to-blue-600 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                    {selectedFile && isAudioFile(selectedFile) ? (
-                      <FileAudio className="h-8 w-8 text-white" />
-                    ) : (
-                      <Upload className="h-8 w-8 text-white" />
-                    )}
+                    <Upload className="h-8 w-8 text-white" />
                   </div>
                   <p className="text-gray-700 dark:text-gray-300 mb-2 font-medium">
                     {selectedFile ? (
                       <span className="flex items-center justify-center gap-2">
-                        {isAudioFile(selectedFile) && <Mic className="h-4 w-4" />}
                         ✅ {selectedFile.name}
                       </span>
                     ) : (
@@ -391,19 +377,12 @@ export default function Pitch() {
                     )}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Images, Documents (PDF, Word, Excel, PowerPoint), Videos, <strong>Audio files</strong> up to 10MB
+                    Images, Documents (PDF, Word, Excel, PowerPoint), Videos up to 10MB
                   </p>
-                  {selectedFile && isAudioFile(selectedFile) && (
-                    <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950/50 rounded-xl border border-blue-200 dark:border-blue-800">
-                      <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
-                        🎙️ Audio detected: Speech will be converted to text automatically
-                      </p>
-                    </div>
-                  )}
                   <input
                     type="file"
                     id="file"
-                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.jpg,.jpeg,.png,.gif,.webp,.bmp,.mp4,.avi,.mov,.wmv,.mp3,.wav,.m4a"
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.jpg,.jpeg,.png,.gif,.webp,.bmp,.mp4,.avi,.mov,.wmv"
                     onChange={handleFileChange}
                     className="hidden"
                   />

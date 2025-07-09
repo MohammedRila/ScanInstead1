@@ -16,7 +16,7 @@ import {
   Shield,
   CheckCircle,
   XCircle,
-  Volume2
+
 } from "lucide-react";
 import { type Pitch } from "@shared/schema";
 
@@ -299,32 +299,7 @@ export default function HomeownerDashboard() {
                           </div>
                         </div>
 
-                        {/* Audio Transcript Display */}
-                        {pitch.audioTranscript && (
-                          <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                            <div className="flex items-center gap-2 mb-3">
-                              <Volume2 className="w-4 h-4 text-blue-600" />
-                              <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                                Audio Transcript
-                              </span>
-                              {pitch.audioConfidence && (
-                                <span className="text-xs text-blue-600 dark:text-blue-400">
-                                  ({Math.round(pitch.audioConfidence * 100)}% confidence)
-                                </span>
-                              )}
-                            </div>
-                            <div className="p-3 bg-white dark:bg-gray-800 rounded border-l-4 border-l-blue-500">
-                              <p className="text-sm text-gray-700 dark:text-gray-300 italic">
-                                "{pitch.audioTranscript}"
-                              </p>
-                            </div>
-                            {pitch.audioLanguage && (
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                                Detected language: {pitch.audioLanguage}
-                              </p>
-                            )}
-                          </div>
-                        )}
+
 
                         {pitch.fileUrl && (
                           <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded">
