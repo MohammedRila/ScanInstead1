@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertHomeownerSchema, insertPitchSchema, insertSalesmanSchema, insertScanTrackingSchema } from "@shared/schema";
 import { generateQRCode } from "./services/qr";
-import { sendPitchEmail } from "./services/email";
+import { sendPitchEmail, sendSalesmanVerificationEmail } from "./services/email";
 import { sendPitchSMS } from "./services/sms";
 import { uploadToFirebase } from "./services/firebase";
 import { analyzePitch } from "./services/ai";
@@ -269,16 +269,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertSalesmanSchema.parse(req.body);
       const salesman = await storage.createSalesman(validatedData);
       
+      // Send verification email
+      try {
+        console.log('Attempting to send verification email to:', salesman.email);
+        await sendSalesmanVerificationEmail(salesman);
+        console.log('Verification email sent successfully!');
+      } catch (emailError) {
+        console.error('Error sending verification email:', emailError);
+        // Don't fail the registration if email fails, but log it
+      }
+      
       res.json({
         success: true,
-        message: 'Salesman registered successfully',
+        message: 'Service provider registered successfully! Check your email for verification.',
         salesman,
       });
     } catch (error) {
       console.error('Error registering salesman:', error);
       res.status(400).json({
         success: false,
-        message: error instanceof Error ? error.message : 'Failed to register salesman',
+        message: error instanceof Error ? error.message : 'Failed to register service provider',
       });
     }
   });
