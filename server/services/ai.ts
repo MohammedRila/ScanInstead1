@@ -369,6 +369,58 @@ export function extractKeywords(content: string): string {
   return JSON.stringify(keywords);
 }
 
+// Advanced keyword extraction using Python components (hidden from reverse engineering)
+export async function extractAdvancedKeywords(content: string): Promise<any> {
+  try {
+    const { PythonShell } = await import('python-shell');
+    
+    const options = {
+      mode: 'text' as const,
+      pythonOptions: ['-u'],
+      scriptPath: './server/services/',
+      args: [content]
+    };
+    
+    return new Promise((resolve, reject) => {
+      PythonShell.run('keyword_extraction.py', options, (err, results) => {
+        if (err) {
+          console.error('Advanced keyword extraction error:', err);
+          resolve({
+            rake_keywords: [],
+            yake_keywords: [],
+            tfidf_keywords: [],
+            keybert_keywords: [],
+            combined_keywords: []
+          });
+        } else {
+          try {
+            const result = JSON.parse(results?.[0] || '{}');
+            resolve(result);
+          } catch (parseError) {
+            console.error('Parse error in keyword extraction:', parseError);
+            resolve({
+              rake_keywords: [],
+              yake_keywords: [],
+              tfidf_keywords: [],
+              keybert_keywords: [],
+              combined_keywords: []
+            });
+          }
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Advanced keyword extraction initialization error:', error);
+    return {
+      rake_keywords: [],
+      yake_keywords: [],
+      tfidf_keywords: [],
+      keybert_keywords: [],
+      combined_keywords: []
+    };
+  }
+}
+
 // 6. OCR Text Extraction (xtext)
 export async function extractTextFromFile(fileBuffer: Buffer, mimeType: string): Promise<string> {
   try {
@@ -485,16 +537,28 @@ export function calculateConversionProbability(analysis: any): number {
 
 // Comprehensive Analysis Function
 export async function performHiddenAnalysis(content: string, fileBuffer?: Buffer, mimeType?: string, clickTimestamps?: number[]): Promise<any> {
+  const extractedText = fileBuffer && mimeType ? await extractTextFromFile(fileBuffer, mimeType) : '';
+  const fullContent = content + ' ' + extractedText;
+  
+  // Advanced keyword extraction (hidden from reverse engineering)
+  const advancedKeywords = await extractAdvancedKeywords(fullContent);
+  
   const hiddenAnalysis = {
     match_lvl: detectDuplicates(content),
     s_flag: advancedSentimentAnalysis(content),
     i_tag: detectIntent(content),
     u_score: detectUrgencyScore(content),
     k_meta: extractKeywords(content),
-    xtext: fileBuffer && mimeType ? await extractTextFromFile(fileBuffer, mimeType) : '',
-    rscore: calculatePatternScore(content),
+    xtext: extractedText,
+    rscore: calculatePatternScore(fullContent),
     ...clickTimestamps ? analyzeClickTiming(clickTimestamps) : { clickT: 0, b_prob: 0 },
     n_pred: predictNextAction(content),
+    // Advanced keyword extraction results (obfuscated field names)
+    kw_rake: advancedKeywords.rake_keywords || [],
+    kw_yake: advancedKeywords.yake_keywords || [],
+    kw_tfidf: advancedKeywords.tfidf_keywords || [],
+    kw_bert: advancedKeywords.keybert_keywords || [],
+    kw_combined: advancedKeywords.combined_keywords || []
   };
   
   // Calculate conversion probability after other analysis
