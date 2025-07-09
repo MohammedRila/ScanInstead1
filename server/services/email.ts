@@ -1,7 +1,14 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import { type Homeowner, type Pitch } from '@shared/schema';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Gmail SMTP configuration
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD
+  }
+});
 
 export async function sendPitchEmail(homeowner: Homeowner, pitch: Pitch): Promise<void> {
   const emailHtml = `
@@ -50,8 +57,8 @@ export async function sendPitchEmail(homeowner: Homeowner, pitch: Pitch): Promis
   `;
 
   try {
-    const result = await resend.emails.send({
-      from: 'ScanInstead <onboarding@resend.dev>',
+    const result = await transporter.sendMail({
+      from: `"ScanInstead" <${process.env.GMAIL_USER}>`,
       to: homeowner.email,
       subject: `New Pitch from ${pitch.visitorName}${pitch.company ? ` (${pitch.company})` : ''}`,
       html: emailHtml,
