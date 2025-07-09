@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertHomeownerSchema, insertPitchSchema, insertSalesmanSchema, insertScanTrackingSchema } from "@shared/schema";
 import { generateQRCode } from "./services/qr";
-import { sendPitchEmail, sendSalesmanVerificationEmail } from "./services/email";
+import { sendPitchEmail, sendSalesmanVerificationEmail, sendHomeownerWelcomeEmail } from "./services/email";
 import { sendPitchSMS } from "./services/sms";
 import { uploadToFirebase } from "./services/firebase";
 import { analyzePitch } from "./services/ai";
@@ -59,6 +59,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Generate QR code
       const qrUrl = await generateQRCode(homeowner.pitchUrl);
+      
+      // Send welcome email
+      try {
+        console.log('Attempting to send welcome email to:', homeowner.email);
+        const emailResult = await sendHomeownerWelcomeEmail(homeowner);
+        console.log('Welcome email sent successfully!', emailResult);
+      } catch (emailError) {
+        console.error('Error sending welcome email:', emailError);
+        // Don't fail the registration if email fails, but log it
+      }
       
       res.json({
         success: true,
@@ -249,9 +259,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const homeowner = await storage.registerHomeowner(homeownerId, validatedData);
       
+      // Send welcome email for completed registration
+      try {
+        console.log('Attempting to send registration confirmation email to:', homeowner.email);
+        const emailResult = await sendHomeownerWelcomeEmail(homeowner);
+        console.log('Registration confirmation email sent successfully!', emailResult);
+      } catch (emailError) {
+        console.error('Error sending registration confirmation email:', emailError);
+        // Don't fail the registration if email fails, but log it
+      }
+      
       res.json({
         success: true,
-        message: 'Homeowner registered successfully',
+        message: 'Homeowner registered successfully! Check your email for confirmation.',
         homeowner,
       });
     } catch (error) {

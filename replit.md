@@ -142,6 +142,9 @@ Required environment variables:
 
 ```
 Changelog:
+- July 09, 2025. Added comprehensive email verification system for both homeowners and service providers - VERIFIED working
+- July 09, 2025. Service provider registration now sends professional welcome emails with account details and dashboard links
+- July 09, 2025. Homeowner registration and QR code creation now sends welcome emails with setup instructions and QR code access
 - July 09, 2025. Successfully migrated from Replit Agent to Replit environment with improved security and stability - VERIFIED working
 - July 09, 2025. Switched email service from Resend to Gmail SMTP with Nodemailer for unrestricted email delivery - VERIFIED working
 - July 09, 2025. Added speech-to-text functionality using Google Cloud Speech API for audio pitch conversion - VERIFIED working
