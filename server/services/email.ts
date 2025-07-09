@@ -51,7 +51,7 @@ export async function sendPitchEmail(homeowner: Homeowner, pitch: Pitch): Promis
 
   try {
     const result = await resend.emails.send({
-      from: 'ScanInstead <noreply@resend.dev>',
+      from: 'ScanInstead <onboarding@resend.dev>',
       to: homeowner.email,
       subject: `New Pitch from ${pitch.visitorName}${pitch.company ? ` (${pitch.company})` : ''}`,
       html: emailHtml,
