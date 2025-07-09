@@ -19,12 +19,20 @@ try:
     nltk.data.find('tokenizers/punkt')
     nltk.data.find('corpora/stopwords')
 except LookupError:
-    nltk.download('punkt', quiet=True)
-    nltk.download('stopwords', quiet=True)
+    try:
+        nltk.download('punkt', quiet=True)
+        nltk.download('punkt_tab', quiet=True)
+        nltk.download('stopwords', quiet=True)
+    except:
+        pass
 
 class AdvancedKeywordExtractor:
     def __init__(self):
-        self.stop_words = set(stopwords.words('english'))
+        try:
+            self.stop_words = set(stopwords.words('english'))
+        except:
+            # Fallback stop words if NLTK data is not available
+            self.stop_words = set(['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'a', 'an', 'as', 'are', 'was', 'were', 'been', 'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'is', 'am'])
         self.stop_words.update(['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'])
         
     def clean_text(self, text):
@@ -39,12 +47,21 @@ class AdvancedKeywordExtractor:
     
     def extract_rake_keywords(self, text, num_keywords=10):
         """RAKE-like keyword extraction"""
-        sentences = sent_tokenize(text)
+        try:
+            sentences = sent_tokenize(text)
+        except:
+            # Fallback to simple sentence splitting
+            sentences = text.split('.')
+        
         phrase_scores = {}
         
         for sentence in sentences:
             # Split sentence into phrases using stop words as delimiters
-            words = word_tokenize(sentence.lower())
+            try:
+                words = word_tokenize(sentence.lower())
+            except:
+                words = sentence.lower().split()
+            
             phrases = []
             current_phrase = []
             
@@ -73,12 +90,20 @@ class AdvancedKeywordExtractor:
     
     def extract_yake_keywords(self, text, num_keywords=10):
         """YAKE-like keyword extraction"""
-        sentences = sent_tokenize(text)
+        try:
+            sentences = sent_tokenize(text)
+        except:
+            sentences = text.split('.')
+        
         word_stats = {}
         
         for sentence in sentences:
-            words = [word.lower() for word in word_tokenize(sentence) 
-                    if word.isalpha() and word.lower() not in self.stop_words]
+            try:
+                words = [word.lower() for word in word_tokenize(sentence) 
+                        if word.isalpha() and word.lower() not in self.stop_words]
+            except:
+                words = [word.lower() for word in sentence.split() 
+                        if word.isalpha() and word.lower() not in self.stop_words]
             
             for i, word in enumerate(words):
                 if word not in word_stats:
@@ -106,14 +131,22 @@ class AdvancedKeywordExtractor:
     
     def extract_tf_idf_keywords(self, text, num_keywords=10):
         """TF-IDF based keyword extraction"""
-        sentences = sent_tokenize(text)
+        try:
+            sentences = sent_tokenize(text)
+        except:
+            sentences = text.split('.')
+        
         word_freq = {}
         doc_freq = {}
         
         # Calculate term frequency
         for sentence in sentences:
-            words = [word.lower() for word in word_tokenize(sentence) 
-                    if word.isalpha() and word.lower() not in self.stop_words]
+            try:
+                words = [word.lower() for word in word_tokenize(sentence) 
+                        if word.isalpha() and word.lower() not in self.stop_words]
+            except:
+                words = [word.lower() for word in sentence.split() 
+                        if word.isalpha() and word.lower() not in self.stop_words]
             
             sentence_words = set(words)
             for word in words:
@@ -138,13 +171,21 @@ class AdvancedKeywordExtractor:
     
     def extract_keybert_like_keywords(self, text, num_keywords=10):
         """KeyBERT-like extraction using semantic similarity"""
-        sentences = sent_tokenize(text)
+        try:
+            sentences = sent_tokenize(text)
+        except:
+            sentences = text.split('.')
+        
         candidate_keywords = []
         
         # Extract candidate phrases (1-3 words)
         for sentence in sentences:
-            words = [word.lower() for word in word_tokenize(sentence) 
-                    if word.isalpha() and word.lower() not in self.stop_words]
+            try:
+                words = [word.lower() for word in word_tokenize(sentence) 
+                        if word.isalpha() and word.lower() not in self.stop_words]
+            except:
+                words = [word.lower() for word in sentence.split() 
+                        if word.isalpha() and word.lower() not in self.stop_words]
             
             # Single words
             candidate_keywords.extend(words)

@@ -421,6 +421,63 @@ export async function extractAdvancedKeywords(content: string): Promise<any> {
   }
 }
 
+// Advanced Data Intelligence System (hidden from reverse engineering)
+export async function performDataIntelligenceAnalysis(entries: any[], usageLogs: any[] = []): Promise<any> {
+  try {
+    const { PythonShell } = await import('python-shell');
+    
+    const data = {
+      entries: entries,
+      usage_logs: usageLogs
+    };
+    
+    const options = {
+      mode: 'text' as const,
+      pythonOptions: ['-u'],
+      scriptPath: './server/services/',
+      args: [JSON.stringify(data)]
+    };
+    
+    return new Promise((resolve, reject) => {
+      PythonShell.run('data_intelligence.py', options, (err, results) => {
+        if (err) {
+          console.error('Data intelligence analysis error:', err);
+          resolve({
+            cleanup: { active_entries: entries, flagged_for_cleanup: [], cleanup_stats: {} },
+            usage_patterns: { frequently_accessed: [], rarely_accessed: [], peak_hours: [] },
+            enriched_entries: entries,
+            deduplication: { duplicates: [], unique_entries: entries },
+            anomalies: { anomalies: [], anomaly_stats: {} }
+          });
+        } else {
+          try {
+            const result = JSON.parse(results?.[0] || '{}');
+            resolve(result);
+          } catch (parseError) {
+            console.error('Parse error in data intelligence:', parseError);
+            resolve({
+              cleanup: { active_entries: entries, flagged_for_cleanup: [], cleanup_stats: {} },
+              usage_patterns: { frequently_accessed: [], rarely_accessed: [], peak_hours: [] },
+              enriched_entries: entries,
+              deduplication: { duplicates: [], unique_entries: entries },
+              anomalies: { anomalies: [], anomaly_stats: {} }
+            });
+          }
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Data intelligence initialization error:', error);
+    return {
+      cleanup: { active_entries: entries, flagged_for_cleanup: [], cleanup_stats: {} },
+      usage_patterns: { frequently_accessed: [], rarely_accessed: [], peak_hours: [] },
+      enriched_entries: entries,
+      deduplication: { duplicates: [], unique_entries: entries },
+      anomalies: { anomalies: [], anomaly_stats: {} }
+    };
+  }
+}
+
 // 6. OCR Text Extraction (xtext)
 export async function extractTextFromFile(fileBuffer: Buffer, mimeType: string): Promise<string> {
   try {

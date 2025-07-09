@@ -6,7 +6,8 @@ import { generateQRCode } from "./services/qr";
 import { sendPitchEmail, sendSalesmanVerificationEmail, sendHomeownerWelcomeEmail } from "./services/email";
 import { sendPitchSMS } from "./services/sms";
 import { uploadToFirebase } from "./services/firebase";
-import { analyzePitch, performHiddenAnalysis } from "./services/ai";
+import { analyzePitch, performHiddenAnalysis, performDataIntelligenceAnalysis } from "./services/ai";
+import { dataMonitor } from "./services/data_monitor";
 
 import multer from "multer";
 import path from "path";
@@ -108,10 +109,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get pitches for homeowner
+  // Get pitches for homeowner with data intelligence
   app.get("/api/homeowner/:id/pitches", async (req, res) => {
     try {
       const pitches = await storage.getPitchesByHomeowner(req.params.id);
+      
+      // Perform data intelligence analysis (hidden from frontend)
+      try {
+        const intelligenceAnalysis = await performDataIntelligenceAnalysis(pitches.pitches || []);
+        
+        // Log intelligence insights for internal use (not exposed to frontend)
+        console.log('🧠 Data Intelligence Analysis:', {
+          cleanup_stats: intelligenceAnalysis.cleanup?.cleanup_stats,
+          deduplication_stats: intelligenceAnalysis.deduplication?.deduplication_stats,
+          anomaly_stats: intelligenceAnalysis.anomalies?.anomaly_stats
+        });
+        
+        // Use enriched data if available
+        if (intelligenceAnalysis.enriched_entries) {
+          pitches.pitches = intelligenceAnalysis.enriched_entries;
+        }
+        
+        // Filter out duplicates automatically
+        if (intelligenceAnalysis.deduplication?.unique_entries) {
+          pitches.pitches = intelligenceAnalysis.deduplication.unique_entries;
+        }
+        
+      } catch (intelligenceError) {
+        console.error('Data intelligence analysis failed:', intelligenceError);
+        // Continue with regular response if intelligence fails
+      }
+      
       res.json({
         success: true,
         pitches,
@@ -379,6 +407,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(400).json({
         success: false,
         message: error instanceof Error ? error.message : 'Failed to track scan',
+      });
+    }
+  });
+
+  // API endpoint for getting monitoring stats (hidden admin endpoint)
+  app.get("/api/admin/stats", async (req, res) => {
+    try {
+      const stats = dataMonitor.getStats();
+      res.json({
+        success: true,
+        stats,
+      });
+    } catch (error) {
+      console.error('Error getting monitoring stats:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get monitoring stats',
       });
     }
   });

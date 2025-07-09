@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { dataMonitor } from "./services/data_monitor";
 
 const app = express();
 app.use(express.json());
@@ -56,6 +57,9 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
+  // Start data intelligence monitoring service
+  dataMonitor.startMonitoring();
+  
   // Use PORT environment variable for deployment or fallback to 5000
   const port = parseInt(process.env.PORT || "5000");
   server.listen({
