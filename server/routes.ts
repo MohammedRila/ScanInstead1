@@ -83,6 +83,41 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Sign in existing homeowner
+  app.post("/api/signin", 
+    [
+      body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
+      sanitizeInput,
+      validateRequest
+    ],
+    async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      // Check if homeowner exists
+      const existingHomeowner = await storage.getHomeownerByEmail(email);
+      
+      if (!existingHomeowner) {
+        return res.status(404).json({
+          success: false,
+          message: 'No account found with this email address. Please create a new account.',
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: 'Welcome back! Redirecting to your dashboard.',
+        homeowner: existingHomeowner,
+      });
+    } catch (error) {
+      console.error('Error signing in:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to sign in',
+      });
+    }
+  });
+
   // Create homeowner and generate QR code
   app.post("/api/create", 
     [
@@ -96,6 +131,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req, res) => {
     try {
       const validatedData = insertHomeownerSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingHomeowner = await storage.getHomeownerByEmail(validatedData.email);
+      
+      if (existingHomeowner) {
+        return res.status(409).json({
+          success: false,
+          message: 'An account with this email already exists. Please sign in instead.',
+          existingUser: true,
+          homeowner: existingHomeowner,
+        });
+      }
+      
       const homeowner = await storage.createHomeowner(validatedData);
       
       // Generate QR code

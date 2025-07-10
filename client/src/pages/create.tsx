@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Copy, Download, Printer, QrCode } from "lucide-react";
+import { CheckCircle, Copy, Download, Printer, QrCode, LogIn, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "wouter";
 
 interface CreateResponse {
   success: boolean;
@@ -37,7 +38,14 @@ export default function Create() {
   const createMutation = useMutation({
     mutationFn: async (data: InsertHomeowner) => {
       const response = await apiRequest("POST", "/api/create", data);
-      return response.json() as Promise<CreateResponse>;
+      const result = await response.json();
+      
+      // Check if user already exists
+      if (!result.success && result.existingUser) {
+        throw new Error("EXISTING_USER");
+      }
+      
+      return result as CreateResponse;
     },
     onSuccess: (data) => {
       setResult(data);
@@ -46,12 +54,26 @@ export default function Create() {
         description: "Your QR code has been generated.",
       });
     },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+    onError: (error: any) => {
+      if (error.message === "EXISTING_USER") {
+        toast({
+          title: "Account Already Exists",
+          description: "An account with this email already exists. Please sign in instead.",
+          variant: "destructive",
+        });
+        // Show sign-in option
+        setResult(null);
+        form.setError("email", {
+          type: "manual",
+          message: "This email is already registered. Please use the sign-in option below.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to create account",
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -279,6 +301,15 @@ export default function Create() {
             </form>
 
             <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+              <div className="text-center mb-6">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Already have an account?{" "}
+                  <Link href="/signin" className="text-blue-600 hover:text-blue-700 font-medium">
+                    Sign in here
+                  </Link>
+                </p>
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                 <div className="p-4">
                   <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">⚡</div>

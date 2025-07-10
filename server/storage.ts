@@ -16,6 +16,7 @@ import { v4 as uuidv4 } from "uuid";
 export interface IStorage {
   createHomeowner(homeowner: InsertHomeowner): Promise<Homeowner>;
   getHomeowner(id: string): Promise<Homeowner | undefined>;
+  getHomeownerByEmail(email: string): Promise<Homeowner | undefined>;
   registerHomeowner(id: string, data: InsertHomeowner): Promise<Homeowner>;
   createPitch(pitch: InsertPitch & { fileUrl?: string }): Promise<Pitch>;
   getPitchesByHomeowner(homeownerId: string): Promise<Pitch[]>;
@@ -97,6 +98,11 @@ export class SupabaseStorage implements IStorage {
 
   async getHomeowner(id: string): Promise<Homeowner | undefined> {
     const result = await db.select().from(homeowners).where(eq(homeowners.id, id)).limit(1);
+    return result[0] || undefined;
+  }
+
+  async getHomeownerByEmail(email: string): Promise<Homeowner | undefined> {
+    const result = await db.select().from(homeowners).where(eq(homeowners.email, email)).limit(1);
     return result[0] || undefined;
   }
 
