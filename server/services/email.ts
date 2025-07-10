@@ -3,10 +3,15 @@ import { type Homeowner, type Pitch } from '@shared/schema';
 
 // Gmail SMTP configuration
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD
+    pass: process.env.GMAIL_PASS
+  },
+  tls: {
+    rejectUnauthorized: false
   }
 });
 
