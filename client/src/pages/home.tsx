@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { QrCode, UserPlus, Mail, ArrowRight, CheckCircle, Zap, Shield } from "lucide-react";
+import { QrCode, UserPlus, Mail, ArrowRight, CheckCircle, Zap, Shield, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -152,16 +152,17 @@ export default function Home() {
             <div className="mb-8">
               <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg max-w-2xl mx-auto">
                 <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white text-center">Watch ScanInstead in Action</h3>
-                <div className="relative aspect-video bg-black rounded-xl overflow-hidden">
-                  <video 
-                    controls 
-                    className="w-full h-full object-cover"
-                    poster="/api/demo/video"
-                    preload="metadata"
-                  >
-                    <source src="/api/demo/video" type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
+                <div className="relative aspect-video bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl overflow-hidden flex items-center justify-center cursor-pointer group"
+                     onClick={() => window.open('/api/demo/video', '_blank')}>
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-all duration-300"></div>
+                  <div className="group flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-all duration-300 hover:scale-110 z-10">
+                    <svg className="h-8 w-8 text-white ml-1 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  </div>
+                  <div className="absolute bottom-4 left-4 right-4 text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                    Click to watch demo video
+                  </div>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-300 mt-4 text-center">
                   See how easy it is to create your QR code and receive professional pitches

@@ -447,7 +447,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Serve demo video
+  // Serve demo video with proper streaming
   app.get("/api/demo/video", async (req, res) => {
     try {
       const videoPath = path.join(process.cwd(), 'attached_assets', 'WhatsApp Video 2025-07-09 at 21.09.20_7666dc3b_1752133737311.mp4');
@@ -455,26 +455,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fileSize = stat.size;
       const range = req.headers.range;
 
+      // Set proper headers for video streaming
+      res.setHeader('Accept-Ranges', 'bytes');
+      res.setHeader('Content-Type', 'video/mp4');
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
+
       if (range) {
         const parts = range.replace(/bytes=/, "").split("-");
         const start = parseInt(parts[0], 10);
         const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
         const chunksize = (end - start) + 1;
-        const file = await fs.readFile(videoPath);
-        const head = {
-          'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-          'Accept-Ranges': 'bytes',
-          'Content-Length': chunksize,
-          'Content-Type': 'video/mp4',
-        };
-        res.writeHead(206, head);
-        res.end(file.slice(start, end + 1));
+        
+        res.status(206);
+        res.setHeader('Content-Range', `bytes ${start}-${end}/${fileSize}`);
+        res.setHeader('Content-Length', chunksize);
+        
+        // Stream the video chunk
+        const fileBuffer = await fs.readFile(videoPath);
+        res.end(fileBuffer.slice(start, end + 1));
       } else {
-        const head = {
-          'Content-Length': fileSize,
-          'Content-Type': 'video/mp4',
-        };
-        res.writeHead(200, head);
+        res.setHeader('Content-Length', fileSize);
         const fileBuffer = await fs.readFile(videoPath);
         res.end(fileBuffer);
       }
