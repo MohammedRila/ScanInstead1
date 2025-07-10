@@ -23,10 +23,10 @@ ScanInstead is a modern full-stack web application that replaces traditional doo
 - **Development**: Custom Vite integration for full-stack development
 
 ### Database & Storage
-- **Primary Database**: Firebase Firestore (NoSQL document database)
+- **Primary Database**: Supabase PostgreSQL (relational database)
 - **File Storage**: Firebase Storage for uploaded attachments
 - **Schema Validation**: Zod for runtime type checking and validation
-- **ORM Alternative**: Direct Firebase Admin SDK usage
+- **ORM**: Drizzle ORM for type-safe database operations
 
 ## Key Components
 
@@ -69,7 +69,7 @@ ScanInstead is a modern full-stack web application that replaces traditional doo
 
 1. **Homeowner Registration**:
    - User submits name and email via `/create` page
-   - System generates unique ID and creates Firebase document
+   - System generates unique ID and creates Supabase record
    - QR code generated linking to pitch form URL
    - Response includes QR code data URL for display/download
 
@@ -77,7 +77,7 @@ ScanInstead is a modern full-stack web application that replaces traditional doo
    - Visitor scans QR code or visits pitch URL directly
    - Form validates required fields (name, offer, reason)
    - File uploads processed through Multer to Firebase Storage
-   - Pitch data stored in Firestore with homeowner reference
+   - Pitch data stored in Supabase with homeowner reference
    - Email notification sent to homeowner with structured HTML
    - Optional SMS notification (if enabled)
 
@@ -90,7 +90,8 @@ ScanInstead is a modern full-stack web application that replaces traditional doo
 ## External Dependencies
 
 ### Database & Storage
-- **Firebase Admin SDK**: Firestore database and Storage
+- **Supabase**: PostgreSQL database hosting
+- **Firebase Admin SDK**: File Storage only
 - **Firebase Service Account**: Authentication via JSON credentials
 
 ### Communication Services
@@ -130,7 +131,7 @@ Required environment variables:
 - `FIREBASE_STORAGE_BUCKET`: Firebase Storage bucket name
 - `RESEND_API_KEY`: Resend API key for email delivery
 - `TWILIO_*`: SMS service configuration (optional)
-- `DATABASE_URL`: PostgreSQL connection (reserved for potential future use)
+- `DATABASE_URL`: Supabase PostgreSQL connection string
 
 ### Hosting Considerations
 - **Replit Integration**: Special handling for Replit domains and development tools
@@ -193,6 +194,11 @@ Changelog:
 - July 08, 2025. Created comprehensive legal pages (Terms of Service, Privacy Policy, FAQ, Features)
 - July 08, 2025. Designed legal content strategically to protect intellectual property while providing transparency
 - July 08, 2025. Added professional footer navigation with links to all legal and support pages
+- July 10, 2025. Successfully migrated database from Firebase to Supabase with full PostgreSQL support - VERIFIED working
+- July 10, 2025. Updated storage interface to use Drizzle ORM for type-safe database operations
+- July 10, 2025. Created comprehensive database schema with all tables (homeowners, pitches, salesmen, scan_tracking)
+- July 10, 2025. All database operations tested and working with Supabase PostgreSQL
+- July 10, 2025. Maintained all existing AI analysis features and hidden analytics with new database structure
 - July 06, 2025. Initial setup
 ```
 
