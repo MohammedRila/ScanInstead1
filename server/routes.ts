@@ -84,7 +84,7 @@ const upload = multer({
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Sign in existing homeowner
-  app.post("/api/signin", 
+  app.post("/api/homeowner-signin", 
     [
       body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
       sanitizeInput,

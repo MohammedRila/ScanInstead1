@@ -8,12 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Copy, Download, Printer, QrCode, LogIn, ArrowLeft } from "lucide-react";
+import { CheckCircle, Copy, Download, Printer, QrCode, LogIn, ArrowLeft, Mail, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 interface CreateResponse {
   success: boolean;
+  message?: string;
+  existingUser?: boolean;
   homeowner: {
     id: string;
     fullName: string;
@@ -23,8 +25,14 @@ interface CreateResponse {
   };
 }
 
+interface SignInForm {
+  email: string;
+}
+
 export default function Create() {
   const [result, setResult] = useState<CreateResponse | null>(null);
+  const [showSignIn, setShowSignIn] = useState(false);
+  const [, navigate] = useLocation();
   const { toast } = useToast();
 
   const form = useForm<InsertHomeowner>({
@@ -56,16 +64,11 @@ export default function Create() {
     },
     onError: (error: any) => {
       if (error.message === "EXISTING_USER") {
+        setShowSignIn(true);
         toast({
           title: "Account Already Exists",
           description: "An account with this email already exists. Please sign in instead.",
           variant: "destructive",
-        });
-        // Show sign-in option
-        setResult(null);
-        form.setError("email", {
-          type: "manual",
-          message: "This email is already registered. Please use the sign-in option below.",
         });
       } else {
         toast({
@@ -77,8 +80,44 @@ export default function Create() {
     },
   });
 
+  const signinForm = useForm<SignInForm>({
+    resolver: zodResolver(z.object({
+      email: z.string().email("Please enter a valid email address"),
+    })),
+    defaultValues: {
+      email: "",
+    },
+  });
+
+  const signinMutation = useMutation({
+    mutationFn: async (data: SignInForm) => {
+      const response = await apiRequest("POST", "/api/homeowner-signin", data);
+      return response.json() as Promise<CreateResponse>;
+    },
+    onSuccess: (data) => {
+      if (data.success && data.homeowner) {
+        toast({
+          title: "Welcome back!",
+          description: "Redirecting to your dashboard...",
+        });
+        navigate(`/homeowner/dashboard/${data.homeowner.id}`);
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Sign In Failed",
+        description: error.message || "Please check your email and try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = form.handleSubmit((data) => {
     createMutation.mutate(data);
+  });
+
+  const handleSignIn = signinForm.handleSubmit((data) => {
+    signinMutation.mutate(data);
   });
 
   const copyUrl = () => {
@@ -227,19 +266,123 @@ export default function Create() {
     );
   }
 
+  // Show sign-in form if existing user detected
+  if (showSignIn) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 py-16">
+        <div className="max-w-md mx-auto px-4">
+          <div className="mb-8">
+            <Button 
+              variant="ghost" 
+              className="mb-4"
+              onClick={() => {
+                setShowSignIn(false);
+                form.clearErrors();
+              }}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Registration
+            </Button>
+            
+            <div className="text-center">
+              <div className="mx-auto w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mb-6">
+                <LogIn className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                Welcome Back!
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300">
+                This email is already registered. Sign in to access your QR code.
+              </p>
+            </div>
+          </div>
+
+          <Card className="border-0 shadow-2xl bg-white dark:bg-gray-800">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-2xl text-center">Sign In</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSignIn} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="signin-email">Email Address</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="signin-email"
+                      type="email"
+                      placeholder="Enter your email"
+                      className="pl-10"
+                      {...signinForm.register("email")}
+                    />
+                  </div>
+                  {signinForm.formState.errors.email && (
+                    <p className="text-sm text-red-600 dark:text-red-400">
+                      {signinForm.formState.errors.email.message}
+                    </p>
+                  )}
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  disabled={signinMutation.isPending}
+                >
+                  {signinMutation.isPending ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                      Signing in...
+                    </div>
+                  ) : (
+                    <>
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Access My QR Code
+                    </>
+                  )}
+                </Button>
+
+                <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+                  Need a new account?{" "}
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setShowSignIn(false);
+                      form.clearErrors();
+                    }}
+                    className="text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    Register here
+                  </button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 py-16">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <QrCode className="h-8 w-8 text-white" />
+        <div className="mb-8">
+          <Link href="/role-selection">
+            <Button variant="ghost" className="mb-4">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Role Selection
+            </Button>
+          </Link>
+          
+          <div className="text-center">
+            <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <QrCode className="h-8 w-8 text-white" />
+            </div>
+            <h1 className="text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+              Create Your QR Code
+            </h1>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-md mx-auto">
+              Generate your digital pitch system in under 60 seconds
+            </p>
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-            Create Your QR Code
-          </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-md mx-auto">
-            Generate your digital pitch system in under 60 seconds
-          </p>
         </div>
 
         <Card className="border-0 shadow-2xl bg-white dark:bg-gray-800 overflow-hidden">
@@ -301,15 +444,6 @@ export default function Create() {
             </form>
 
             <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-              <div className="text-center mb-6">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Already have an account?{" "}
-                  <Link href="/signin" className="text-blue-600 hover:text-blue-700 font-medium">
-                    Sign in here
-                  </Link>
-                </p>
-              </div>
-              
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                 <div className="p-4">
                   <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">⚡</div>
