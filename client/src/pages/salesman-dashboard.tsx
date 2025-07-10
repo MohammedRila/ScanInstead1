@@ -3,16 +3,28 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BarChart, Users, Calendar, TrendingUp, Target, MapPin } from "lucide-react";
+import { BarChart, Users, Calendar, TrendingUp, Target, MapPin, RefreshCw } from "lucide-react";
 
 export default function SalesmanDashboard() {
   const { id } = useParams<{ id: string }>();
 
   // Fetch salesman data and scan history
   const { data: salesman, isLoading: salesmanLoading, refetch: refetchSalesman } = useQuery({
-    queryKey: [`/api/salesman/${id}`],
+    queryKey: [`/api/salesman/${id}`, Date.now()],
+    queryFn: async () => {
+      const response = await fetch(`/api/salesman/${id}?t=${Date.now()}`, {
+        cache: 'no-cache',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
+      return response.json();
+    },
     enabled: !!id,
-    refetchInterval: 10000, // Refetch every 10 seconds to update verification status
+    refetchInterval: 3000, // Refetch every 3 seconds to update verification status
+    refetchIntervalInBackground: true,
+    staleTime: 0, // Always consider data stale to force refetch
   });
 
   const { data: scanHistory, isLoading: scansLoading } = useQuery({
@@ -78,13 +90,24 @@ export default function SalesmanDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Badge variant="secondary" className={`px-4 py-2 text-sm font-medium ${
-              salesman.isVerified 
-                ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300" 
-                : "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300"
-            }`}>
-              {salesman.isVerified ? "✅ Verified" : "⏳ Pending Verification"}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className={`px-4 py-2 text-sm font-medium ${
+                salesman.isVerified 
+                  ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300" 
+                  : "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300"
+              }`}>
+                {salesman.isVerified ? "✅ Verified" : "⏳ Pending Verification"}
+              </Badge>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => refetchSalesman()}
+                className="h-8 w-8 p-0"
+                title="Refresh verification status"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            </div>
             <div className="text-right">
               <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{totalScans}</div>
               <div className="text-sm text-gray-500 dark:text-gray-400">Total Scans</div>

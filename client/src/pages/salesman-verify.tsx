@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { CheckCircle, XCircle, Briefcase, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -29,6 +29,11 @@ export default function SalesmanVerify() {
     },
     onSuccess: (data) => {
       setSalesmanData(data.salesman);
+      
+      // Invalidate all salesman queries to force refetch
+      queryClient.invalidateQueries({ queryKey: [`/api/salesman/${data.salesman.id}`] });
+      queryClient.removeQueries({ queryKey: [`/api/salesman/${data.salesman.id}`] });
+      
       if (data.alreadyVerified) {
         setVerificationStatus('already-verified');
         toast({
