@@ -361,24 +361,32 @@ export default function Pitch() {
               
               <div className="space-y-3">
                 <Label htmlFor="file" className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Attach Files <span className="text-gray-500 dark:text-gray-400 font-normal">(optional)</span>
+                  📎 Upload Business Materials <span className="text-gray-500 dark:text-gray-400 font-normal">(Recommended)</span>
                 </Label>
-                <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-8 text-center hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-950/50 transition-all duration-300">
-                  <div className="bg-gradient-to-br from-purple-500 to-blue-600 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <div className="border-2 border-dashed border-purple-300 dark:border-purple-600 rounded-2xl p-8 text-center hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-950/50 transition-all duration-300 bg-gradient-to-br from-purple-50/50 to-blue-50/50 dark:from-purple-950/20 dark:to-blue-950/20">
+                  <div className="bg-gradient-to-br from-purple-500 to-blue-600 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <Upload className="h-8 w-8 text-white" />
                   </div>
-                  <p className="text-gray-700 dark:text-gray-300 mb-2 font-medium">
+                  <p className="text-gray-700 dark:text-gray-300 mb-2 font-medium text-lg">
                     {selectedFile ? (
-                      <span className="flex items-center justify-center gap-2">
+                      <span className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400">
                         ✅ {selectedFile.name}
                       </span>
                     ) : (
-                      "Click to upload or drag and drop"
+                      "Upload your business flyers, brochures, or portfolio"
                     )}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Images, Documents (PDF, Word, Excel, PowerPoint), Videos up to 10MB
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    📄 PDFs, Word docs, Excel sheets, PowerPoint presentations<br/>
+                    📸 Images (JPG, PNG, GIF, WebP) and 🎥 Videos (MP4, AVI, MOV)<br/>
+                    📁 Maximum file size: 10MB
                   </p>
+                  <div className="bg-blue-50 dark:bg-blue-950/30 rounded-xl p-4 mb-4">
+                    <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
+                      💡 Pro Tip: Upload professional materials like service brochures, before/after photos, 
+                      pricing sheets, or testimonials to make your pitch stand out!
+                    </p>
+                  </div>
                   <input
                     type="file"
                     id="file"
@@ -389,11 +397,12 @@ export default function Pitch() {
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
-                    className="mt-4 border-2"
+                    size="lg"
+                    className="mt-4 border-2 border-purple-300 text-purple-700 hover:bg-purple-100 dark:border-purple-600 dark:text-purple-300 dark:hover:bg-purple-950/50 font-semibold"
                     onClick={() => document.getElementById("file")?.click()}
                   >
-                    Choose File
+                    <Upload className="h-5 w-5 mr-2" />
+                    Choose Business File
                   </Button>
                 </div>
               </div>
