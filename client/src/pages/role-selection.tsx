@@ -104,7 +104,7 @@ export default function RoleSelection() {
               </div>
               
               <Button asChild className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 text-lg">
-                <Link href="/salesman/register">
+                <Link href="/salesman/register?reset=true">
                   Register as Provider
                 </Link>
               </Button>

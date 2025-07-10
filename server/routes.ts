@@ -499,6 +499,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Salesman sign-in route
+  app.post("/api/salesman/signin", 
+    [
+      body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
+      sanitizeInput,
+      validateRequest
+    ],
+    async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      // Find salesman by email
+      const salesman = await storage.getSalesmanByEmail(email);
+      
+      if (!salesman) {
+        return res.status(404).json({
+          success: false,
+          message: 'No account found with this email address.',
+        });
+      }
+      
+      if (!salesman.isVerified) {
+        return res.status(403).json({
+          success: false,
+          message: 'Please verify your email address before signing in.',
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: 'Sign in successful!',
+        salesman,
+      });
+    } catch (error) {
+      console.error('Error signing in salesman:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to sign in',
+      });
+    }
+  });
+
   // Salesman email verification route (POST for manual verification)
   app.post("/api/salesman/verify", 
     [

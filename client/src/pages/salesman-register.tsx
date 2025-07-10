@@ -55,14 +55,37 @@ export default function SalesmanRegister() {
   const [showSignIn, setShowSignIn] = useState(false);
   const { toast } = useToast();
 
-  // Check if user is already registered (from localStorage)
+  // Check if user is already registered (from localStorage) but allow manual reset
   useEffect(() => {
-    const storedSalesmanId = localStorage.getItem('salesmanId');
-    if (storedSalesmanId) {
-      setSalesmanId(storedSalesmanId);
-      setIsRegistered(true);
+    const urlParams = new URLSearchParams(window.location.search);
+    const shouldReset = urlParams.get('reset') === 'true';
+    
+    if (shouldReset) {
+      // Clear localStorage and reset all state
+      localStorage.removeItem('salesmanId');
+      setIsRegistered(false);
+      setSalesmanId(null);
+      setNeedsVerification(false);
+      setShowSignIn(false);
+      // Clean URL without reset parameter
+      window.history.replaceState({}, '', '/salesman/register');
+    } else {
+      const storedSalesmanId = localStorage.getItem('salesmanId');
+      if (storedSalesmanId) {
+        setSalesmanId(storedSalesmanId);
+        setIsRegistered(true);
+      }
     }
   }, []);
+
+  const resetRegistration = () => {
+    localStorage.removeItem('salesmanId');
+    setIsRegistered(false);
+    setSalesmanId(null);
+    setNeedsVerification(false);
+    setShowSignIn(false);
+    form.reset();
+  };
 
   const form = useForm<InsertSalesman>({
     resolver: zodResolver(insertSalesmanSchema),
@@ -258,9 +281,17 @@ export default function SalesmanRegister() {
           <div className="space-y-4">
             <Button 
               onClick={viewDashboard}
-              className="w-full bg-orange-600 hover:bg-orange-700"
+              className="w-full bg-orange-600 hover:bg-orange-700 mb-3"
             >
               View My Dashboard
+            </Button>
+            
+            <Button 
+              variant="outline"
+              onClick={resetRegistration}
+              className="w-full"
+            >
+              Start New Registration
             </Button>
             
             <Card className="bg-white dark:bg-gray-800">
