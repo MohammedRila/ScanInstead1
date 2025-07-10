@@ -445,7 +445,7 @@ export default function HomeownerRegister() {
             </form>
 
             <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+              <div className="grid grid-cols-1 gap-3 text-center sm:grid-cols-3 sm:gap-4">
                 <div className="p-4">
                   <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">⚡</div>
                   <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Instant Setup</div>

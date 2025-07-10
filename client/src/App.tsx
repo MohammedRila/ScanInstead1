@@ -30,7 +30,7 @@ import Features from "@/pages/features";
 function Router() {
   // Track page views when routes change
   useAnalytics();
-  
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />

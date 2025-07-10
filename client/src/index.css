@@ -55,4 +55,41 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    html {
+      /* Prevent horizontal scroll on mobile */
+      overflow-x: hidden;
+    }
+    
+    body {
+      /* Improve touch scrolling on iOS */
+      -webkit-overflow-scrolling: touch;
+      /* Prevent text size adjustment on iOS */
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* Larger touch targets for mobile */
+    button, input, select, textarea, a {
+      min-height: 44px;
+    }
+
+    /* Improve spacing on mobile */
+    .container {
+      @apply px-4;
+    }
+  }
+
+  /* Prevent zoom on input focus for iOS */
+  @media (max-width: 768px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="password"],
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
 }

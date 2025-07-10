@@ -49,7 +49,7 @@ export default function Home() {
                 <a href="#demo">Watch Demo</a>
               </Button>
             </div>
-            
+
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-2xl mx-auto">
               <div className="text-center">
@@ -81,8 +81,8 @@ export default function Home() {
               Transform your door-to-door experience with our intelligent QR-based system
             </p>
           </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
+
+          <div className="grid grid-cols-1 gap-6 mb-12 md:grid-cols-3 md:gap-8 md:mb-16">
             <Card className="relative overflow-hidden border-0 shadow-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/30">
               <CardContent className="pt-8 pb-8 text-center relative z-10">
                 <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-6 shadow-lg">
@@ -98,7 +98,7 @@ export default function Home() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card className="relative overflow-hidden border-0 shadow-xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/30">
               <CardContent className="pt-8 pb-8 text-center relative z-10">
                 <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-6 shadow-lg">
@@ -114,7 +114,7 @@ export default function Home() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card className="relative overflow-hidden border-0 shadow-xl bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/30">
               <CardContent className="pt-8 pb-8 text-center relative z-10">
                 <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-6 shadow-lg">
@@ -146,7 +146,7 @@ export default function Home() {
               Test our demo pitch form to see exactly what visitors experience when they scan your QR code
             </p>
           </div>
-          
+
           <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-3xl p-8 md:p-12 shadow-2xl">
             {/* Video Demo Section */}
             <div className="mb-8">
@@ -177,7 +177,7 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            
+
             {/* Interactive Demo Section */}
             <div className="text-center">
               <div className="mb-6">
