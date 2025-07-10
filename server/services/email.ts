@@ -176,11 +176,26 @@ export async function sendSalesmanVerificationEmail(salesman: any): Promise<void
           </ul>
         </div>
         
-        <div style="text-align: center; margin-top: 30px;">
+        <div style="background-color: #e0f2fe; padding: 20px; border-radius: 6px; border-left: 4px solid #0288d1; margin-bottom: 20px;">
+          <h3 style="margin: 0 0 10px 0; color: #01579b;">📧 Action Required: Verify Your Email</h3>
+          <p style="margin: 0; color: #01579b;">Click the button below to verify your email address and activate your account:</p>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${process.env.BASE_URL || 'https://scaninstead.com'}/salesman/verify?email=${encodeURIComponent(sanitizedSalesman.email)}" 
+             style="background-color: #0288d1; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px; margin-bottom: 15px;">
+            ✅ Verify My Email Address
+          </a>
+          <br>
           <a href="${process.env.BASE_URL || 'https://scaninstead.com'}/salesman/dashboard/${sanitizedSalesman.id}" 
              style="background-color: #10B981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
             Access Your Dashboard
           </a>
+        </div>
+        
+        <div style="background-color: #fff3cd; padding: 15px; border-radius: 6px; border-left: 4px solid #ffc107; margin-bottom: 20px;">
+          <p style="margin: 0; color: #856404; font-size: 14px;"><strong>Note:</strong> You must verify your email before you can sign in and start scanning QR codes. If the button doesn't work, copy and paste this link into your browser:</p>
+          <p style="margin: 10px 0 0 0; word-break: break-all; font-family: monospace; background-color: #f8f9fa; padding: 8px; border-radius: 4px; font-size: 12px;">${process.env.BASE_URL || 'https://scaninstead.com'}/salesman/verify?email=${encodeURIComponent(sanitizedSalesman.email)}</p>
         </div>
         
         <div style="text-align: center; margin-top: 20px;">

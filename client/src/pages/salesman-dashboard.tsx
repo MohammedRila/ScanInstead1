@@ -9,9 +9,10 @@ export default function SalesmanDashboard() {
   const { id } = useParams<{ id: string }>();
 
   // Fetch salesman data and scan history
-  const { data: salesman, isLoading: salesmanLoading } = useQuery({
+  const { data: salesman, isLoading: salesmanLoading, refetch: refetchSalesman } = useQuery({
     queryKey: [`/api/salesman/${id}`],
     enabled: !!id,
+    refetchInterval: 10000, // Refetch every 10 seconds to update verification status
   });
 
   const { data: scanHistory, isLoading: scansLoading } = useQuery({

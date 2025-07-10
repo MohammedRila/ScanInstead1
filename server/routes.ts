@@ -444,7 +444,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Salesman email verification route
+  // Salesman email verification route (GET for email links)
+  app.get("/api/salesman/verify", 
+    [
+      validateRequest
+    ],
+    async (req, res) => {
+    try {
+      const { email } = req.query;
+      
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({
+          success: false,
+          message: 'Email parameter is required.',
+        });
+      }
+      
+      // Find salesman by email
+      const salesman = await storage.getSalesmanByEmail(email);
+      
+      if (!salesman) {
+        return res.status(404).json({
+          success: false,
+          message: 'No account found with this email address.',
+        });
+      }
+      
+      if (salesman.isVerified) {
+        return res.json({
+          success: true,
+          message: 'Email is already verified.',
+          salesman,
+          alreadyVerified: true,
+        });
+      }
+      
+      // Verify the salesman
+      await storage.verifySalesman(salesman.id);
+      
+      res.json({
+        success: true,
+        message: 'Email verified successfully! Your account is now active.',
+        salesman: {
+          ...salesman,
+          isVerified: true,
+        },
+      });
+    } catch (error) {
+      console.error('Error verifying salesman:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to verify email',
+      });
+    }
+  });
+
+  // Salesman email verification route (POST for manual verification)
   app.post("/api/salesman/verify", 
     [
       body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
@@ -465,8 +520,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // For now, we'll auto-verify since email was sent successfully
-      // In a production system, you'd have a verification token
+      if (salesman.isVerified) {
+        return res.json({
+          success: true,
+          message: 'Email is already verified.',
+          salesman,
+          alreadyVerified: true,
+        });
+      }
+      
+      // Verify the salesman
       await storage.verifySalesman(salesman.id);
       
       res.json({

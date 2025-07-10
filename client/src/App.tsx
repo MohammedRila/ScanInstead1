@@ -19,6 +19,7 @@ import Success from "@/pages/success";
 import Landing from "@/pages/landing";
 import HomeownerWelcome from "@/pages/homeowner-welcome";
 import SalesmanRegister from "@/pages/salesman-register";
+import SalesmanVerify from "@/pages/salesman-verify";
 import SalesmanDashboard from "@/pages/salesman-dashboard";
 import HomeownerDashboard from "@/pages/homeowner-dashboard";
 import Terms from "@/pages/terms";
@@ -43,6 +44,7 @@ function Router() {
           <Route path="/homeowner/welcome/:id" component={HomeownerWelcome} />
           <Route path="/homeowner/dashboard/:id" component={HomeownerDashboard} />
           <Route path="/salesman/register" component={SalesmanRegister} />
+          <Route path="/salesman/verify" component={SalesmanVerify} />
           <Route path="/salesman/dashboard/:id" component={SalesmanDashboard} />
           <Route path="/v/:id" component={Pitch} />
           <Route path="/success" component={Success} />
