@@ -9,8 +9,8 @@ export default function SalesmanDashboard() {
   const { id } = useParams<{ id: string }>();
 
   // Fetch salesman data and scan history
-  const { data: salesman, isLoading: salesmanLoading, refetch: refetchSalesman } = useQuery({
-    queryKey: [`/api/salesman/${id}`, Date.now()],
+  const { data: salesmanResponse, isLoading: salesmanLoading, refetch: refetchSalesman } = useQuery({
+    queryKey: [`/api/salesman/${id}`],
     queryFn: async () => {
       const response = await fetch(`/api/salesman/${id}?t=${Date.now()}`, {
         cache: 'no-cache',
@@ -19,13 +19,16 @@ export default function SalesmanDashboard() {
           'Pragma': 'no-cache'
         }
       });
-      return response.json();
+      const data = await response.json();
+      return data;
     },
     enabled: !!id,
     refetchInterval: 3000, // Refetch every 3 seconds to update verification status
     refetchIntervalInBackground: true,
     staleTime: 0, // Always consider data stale to force refetch
   });
+
+  const salesman = salesmanResponse?.salesman;
 
   const { data: scanHistory, isLoading: scansLoading } = useQuery({
     queryKey: [`/api/salesman/${id}/scans`],
@@ -37,7 +40,9 @@ export default function SalesmanDashboard() {
     enabled: !!id,
   });
 
-  if (salesmanLoading) {
+  console.log('Dashboard State:', { salesmanLoading, salesmanResponse, salesman });
+
+  if (salesmanLoading || !salesmanResponse) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 dark:from-gray-900 dark:via-orange-900/20 dark:to-gray-800 flex items-center justify-center">
         <div className="text-center">
