@@ -147,22 +147,46 @@ export default function Home() {
             </p>
           </div>
           
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-3xl p-8 md:p-12 text-center shadow-2xl">
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-3xl p-8 md:p-12 shadow-2xl">
+            {/* Video Demo Section */}
             <div className="mb-8">
-              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg inline-block">
-                <QrCode className="h-16 w-16 text-gray-600 dark:text-gray-300 mx-auto" />
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg max-w-2xl mx-auto">
+                <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white text-center">Watch ScanInstead in Action</h3>
+                <div className="relative aspect-video bg-black rounded-xl overflow-hidden">
+                  <video 
+                    controls 
+                    className="w-full h-full object-cover"
+                    poster="/api/demo/video"
+                    preload="metadata"
+                  >
+                    <source src="/api/demo/video" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-4 text-center">
+                  See how easy it is to create your QR code and receive professional pitches
+                </p>
               </div>
             </div>
-            <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Interactive Demo</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-md mx-auto">
-              Experience the visitor's journey from QR scan to pitch submission
-            </p>
-            <Button asChild size="lg" className="text-lg px-10 py-6 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-lg">
-              <Link href="/v/demo">
-                Launch Demo
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
+            
+            {/* Interactive Demo Section */}
+            <div className="text-center">
+              <div className="mb-6">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg inline-block">
+                  <QrCode className="h-12 w-12 text-gray-600 dark:text-gray-300 mx-auto" />
+                </div>
+              </div>
+              <h4 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">Try Interactive Demo</h4>
+              <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-md mx-auto">
+                Experience the visitor's journey from QR scan to pitch submission
+              </p>
+              <Button asChild size="lg" className="text-lg px-10 py-6 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-lg">
+                <Link href="/v/demo">
+                  Launch Interactive Demo
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>

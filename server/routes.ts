@@ -429,6 +429,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/leaderboard", getSalesmanLeaderboard);
   app.get("/api/realtime/stats", getRealtimeStats);
 
+  // Serve demo video
+  app.get("/api/demo/video", async (req, res) => {
+    try {
+      const videoPath = path.join(process.cwd(), 'attached_assets', 'WhatsApp Video 2025-07-09 at 21.09.20_7666dc3b_1752133737311.mp4');
+      const stat = await fs.stat(videoPath);
+      const fileSize = stat.size;
+      const range = req.headers.range;
+
+      if (range) {
+        const parts = range.replace(/bytes=/, "").split("-");
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+        const chunksize = (end - start) + 1;
+        const file = await fs.readFile(videoPath);
+        const head = {
+          'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+          'Accept-Ranges': 'bytes',
+          'Content-Length': chunksize,
+          'Content-Type': 'video/mp4',
+        };
+        res.writeHead(206, head);
+        res.end(file.slice(start, end + 1));
+      } else {
+        const head = {
+          'Content-Length': fileSize,
+          'Content-Type': 'video/mp4',
+        };
+        res.writeHead(200, head);
+        const fileBuffer = await fs.readFile(videoPath);
+        res.end(fileBuffer);
+      }
+    } catch (error) {
+      console.error('Error serving demo video:', error);
+      res.status(404).json({ error: 'Video not found' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
