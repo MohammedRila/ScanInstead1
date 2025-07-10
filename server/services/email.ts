@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { type Homeowner, type Pitch } from '@shared/schema';
+import xss from 'xss';
 
 // Gmail SMTP configuration
 const transporter = nodemailer.createTransport({
@@ -11,11 +12,55 @@ const transporter = nodemailer.createTransport({
     pass: process.env.GMAIL_PASS
   },
   tls: {
-    rejectUnauthorized: false
+    rejectUnauthorized: true,
+    minVersion: 'TLSv1.2'
   }
 });
 
+// Security helper functions
+function sanitizeEmailContent(content: string): string {
+  return xss(content, {
+    whiteList: {
+      div: ['style'],
+      p: ['style'],
+      h1: ['style'],
+      h2: ['style'],
+      h3: ['style'],
+      strong: [],
+      ul: ['style'],
+      li: [],
+      a: ['href', 'style'],
+    },
+    stripIgnoreTag: true,
+    stripIgnoreTagBody: ['script', 'style'],
+  });
+}
+
+function validateEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email) && email.length <= 254;
+}
+
+function sanitizeUserData(data: any): any {
+  const sanitized = { ...data };
+  
+  // Sanitize string fields
+  for (const key in sanitized) {
+    if (typeof sanitized[key] === 'string') {
+      sanitized[key] = xss(sanitized[key]);
+    }
+  }
+  
+  return sanitized;
+}
+
 export async function sendHomeownerWelcomeEmail(homeowner: any): Promise<void> {
+  // Validate and sanitize homeowner data
+  if (!homeowner.email || !validateEmail(homeowner.email)) {
+    throw new Error('Invalid email address');
+  }
+  
+  const sanitizedHomeowner = sanitizeUserData(homeowner);
   const emailHtml = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background-color: #8B5CF6; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
@@ -28,10 +73,10 @@ export async function sendHomeownerWelcomeEmail(homeowner: any): Promise<void> {
         
         <div style="background-color: white; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
           <h3 style="margin: 0 0 15px 0; color: #374151;">Account Details</h3>
-          <p><strong>Name:</strong> ${homeowner.fullName}</p>
-          <p><strong>Email:</strong> ${homeowner.email}</p>
-          ${homeowner.phone ? `<p><strong>Phone:</strong> ${homeowner.phone}</p>` : ''}
-          <p><strong>Notification Preference:</strong> ${homeowner.notificationPreference || 'Email'}</p>
+          <p><strong>Name:</strong> ${sanitizedHomeowner.fullName}</p>
+          <p><strong>Email:</strong> ${sanitizedHomeowner.email}</p>
+          ${sanitizedHomeowner.phone ? `<p><strong>Phone:</strong> ${sanitizedHomeowner.phone}</p>` : ''}
+          <p><strong>Notification Preference:</strong> ${sanitizedHomeowner.notificationPreference || 'Email'}</p>
         </div>
         
         <div style="background-color: #f0f9ff; padding: 20px; border-radius: 6px; border-left: 4px solid #8B5CF6; margin-bottom: 20px;">
@@ -51,11 +96,11 @@ export async function sendHomeownerWelcomeEmail(homeowner: any): Promise<void> {
         </div>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${homeowner.pitchUrl}" 
+          <a href="${sanitizedHomeowner.pitchUrl}" 
              style="background-color: #8B5CF6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; margin-right: 10px;">
             View Your QR Code
           </a>
-          <a href="${process.env.BASE_URL || 'https://scaninstead.com'}/homeowner/dashboard/${homeowner.id}" 
+          <a href="${process.env.BASE_URL || 'https://scaninstead.com'}/homeowner/dashboard/${sanitizedHomeowner.id}" 
              style="background-color: #10B981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
             Access Dashboard
           </a>
@@ -67,7 +112,7 @@ export async function sendHomeownerWelcomeEmail(homeowner: any): Promise<void> {
         
         <div style="text-align: center; margin-top: 20px;">
           <p style="color: #6b7280; font-size: 14px;">
-            Account created on ${homeowner.createdAt.toLocaleDateString()} at ${homeowner.createdAt.toLocaleTimeString()}
+            Account created on ${sanitizedHomeowner.createdAt.toLocaleDateString()} at ${sanitizedHomeowner.createdAt.toLocaleTimeString()}
           </p>
         </div>
       </div>
@@ -77,9 +122,9 @@ export async function sendHomeownerWelcomeEmail(homeowner: any): Promise<void> {
   try {
     const result = await transporter.sendMail({
       from: `"ScanInstead" <${process.env.GMAIL_USER}>`,
-      to: homeowner.email,
+      to: sanitizedHomeowner.email,
       subject: `Welcome to ScanInstead - Your QR Code is Ready!`,
-      html: emailHtml,
+      html: sanitizeEmailContent(emailHtml),
     });
     
     console.log('Homeowner welcome email sent successfully:', result);
@@ -91,6 +136,12 @@ export async function sendHomeownerWelcomeEmail(homeowner: any): Promise<void> {
 }
 
 export async function sendSalesmanVerificationEmail(salesman: any): Promise<void> {
+  // Validate and sanitize salesman data
+  if (!salesman.email || !validateEmail(salesman.email)) {
+    throw new Error('Invalid email address');
+  }
+  
+  const sanitizedSalesman = sanitizeUserData(salesman);
   const emailHtml = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background-color: #10B981; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
@@ -103,11 +154,11 @@ export async function sendSalesmanVerificationEmail(salesman: any): Promise<void
         
         <div style="background-color: white; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
           <h3 style="margin: 0 0 15px 0; color: #374151;">Account Details</h3>
-          <p><strong>Name:</strong> ${salesman.firstName} ${salesman.lastName}</p>
-          <p><strong>Business:</strong> ${salesman.businessName}</p>
-          ${salesman.businessType ? `<p><strong>Business Type:</strong> ${salesman.businessType}</p>` : ''}
-          <p><strong>Email:</strong> ${salesman.email}</p>
-          ${salesman.phone ? `<p><strong>Phone:</strong> ${salesman.phone}</p>` : ''}
+          <p><strong>Name:</strong> ${sanitizedSalesman.firstName} ${sanitizedSalesman.lastName}</p>
+          <p><strong>Business:</strong> ${sanitizedSalesman.businessName}</p>
+          ${sanitizedSalesman.businessType ? `<p><strong>Business Type:</strong> ${sanitizedSalesman.businessType}</p>` : ''}
+          <p><strong>Email:</strong> ${sanitizedSalesman.email}</p>
+          ${sanitizedSalesman.phone ? `<p><strong>Phone:</strong> ${sanitizedSalesman.phone}</p>` : ''}
         </div>
         
         <div style="background-color: #dbeafe; padding: 20px; border-radius: 6px; border-left: 4px solid #3B82F6; margin-bottom: 20px;">
@@ -126,7 +177,7 @@ export async function sendSalesmanVerificationEmail(salesman: any): Promise<void
         </div>
         
         <div style="text-align: center; margin-top: 30px;">
-          <a href="${process.env.BASE_URL || 'https://scaninstead.com'}/salesman/dashboard/${salesman.id}" 
+          <a href="${process.env.BASE_URL || 'https://scaninstead.com'}/salesman/dashboard/${sanitizedSalesman.id}" 
              style="background-color: #10B981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
             Access Your Dashboard
           </a>
@@ -134,7 +185,7 @@ export async function sendSalesmanVerificationEmail(salesman: any): Promise<void
         
         <div style="text-align: center; margin-top: 20px;">
           <p style="color: #6b7280; font-size: 14px;">
-            Account created on ${salesman.createdAt.toLocaleDateString()} at ${salesman.createdAt.toLocaleTimeString()}
+            Account created on ${sanitizedSalesman.createdAt.toLocaleDateString()} at ${sanitizedSalesman.createdAt.toLocaleTimeString()}
           </p>
         </div>
       </div>
@@ -144,9 +195,9 @@ export async function sendSalesmanVerificationEmail(salesman: any): Promise<void
   try {
     const result = await transporter.sendMail({
       from: `"ScanInstead" <${process.env.GMAIL_USER}>`,
-      to: salesman.email,
-      subject: `Welcome to ScanInstead - Account Verified for ${salesman.businessName}`,
-      html: emailHtml,
+      to: sanitizedSalesman.email,
+      subject: `Welcome to ScanInstead - Account Verified for ${sanitizedSalesman.businessName}`,
+      html: sanitizeEmailContent(emailHtml),
     });
     
     console.log('Verification email sent successfully:', result);
@@ -158,6 +209,13 @@ export async function sendSalesmanVerificationEmail(salesman: any): Promise<void
 }
 
 export async function sendPitchEmail(homeowner: Homeowner, pitch: Pitch): Promise<void> {
+  // Validate and sanitize data
+  if (!homeowner.email || !validateEmail(homeowner.email)) {
+    throw new Error('Invalid homeowner email address');
+  }
+  
+  const sanitizedHomeowner = sanitizeUserData(homeowner);
+  const sanitizedPitch = sanitizeUserData(pitch);
   const emailHtml = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background-color: #3B82F6; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
@@ -170,23 +228,23 @@ export async function sendPitchEmail(homeowner: Homeowner, pitch: Pitch): Promis
         
         <div style="background-color: white; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
           <h3 style="margin: 0 0 10px 0; color: #374151;">Visitor Information</h3>
-          <p><strong>Name:</strong> ${pitch.visitorName}</p>
-          ${pitch.company ? `<p><strong>Company:</strong> ${pitch.company}</p>` : ''}
-          ${pitch.visitorEmail ? `<p><strong>Email:</strong> ${pitch.visitorEmail}</p>` : ''}
-          ${pitch.visitorPhone ? `<p><strong>Phone:</strong> ${pitch.visitorPhone}</p>` : ''}
+          <p><strong>Name:</strong> ${sanitizedPitch.visitorName}</p>
+          ${sanitizedPitch.company ? `<p><strong>Company:</strong> ${sanitizedPitch.company}</p>` : ''}
+          ${sanitizedPitch.visitorEmail ? `<p><strong>Email:</strong> ${sanitizedPitch.visitorEmail}</p>` : ''}
+          ${sanitizedPitch.visitorPhone ? `<p><strong>Phone:</strong> ${sanitizedPitch.visitorPhone}</p>` : ''}
         </div>
         
         <div style="background-color: white; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
           <h3 style="margin: 0 0 10px 0; color: #374151;">Offer Details</h3>
-          <p><strong>Service:</strong> ${pitch.offer}</p>
+          <p><strong>Service:</strong> ${sanitizedPitch.offer}</p>
           <p><strong>Reason:</strong></p>
-          <p style="background-color: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${pitch.reason}</p>
+          <p style="background-color: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${sanitizedPitch.reason}</p>
         </div>
         
-        ${pitch.fileUrl ? `
+        ${sanitizedPitch.fileUrl ? `
           <div style="background-color: white; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
             <h3 style="margin: 0 0 10px 0; color: #374151;">Attached File</h3>
-            <p><a href="${pitch.fileUrl}" style="color: #3B82F6; text-decoration: none;">${pitch.fileName || 'View Attachment'}</a></p>
+            <p><a href="${sanitizedPitch.fileUrl}" style="color: #3B82F6; text-decoration: none;">${sanitizedPitch.fileName || 'View Attachment'}</a></p>
           </div>
         ` : ''}
         
@@ -196,7 +254,7 @@ export async function sendPitchEmail(homeowner: Homeowner, pitch: Pitch): Promis
         
         <div style="text-align: center; margin-top: 20px;">
           <p style="color: #6b7280; font-size: 14px;">
-            Submitted on ${pitch.createdAt.toLocaleDateString()} at ${pitch.createdAt.toLocaleTimeString()}
+            Submitted on ${sanitizedPitch.createdAt.toLocaleDateString()} at ${sanitizedPitch.createdAt.toLocaleTimeString()}
           </p>
         </div>
       </div>
@@ -206,9 +264,9 @@ export async function sendPitchEmail(homeowner: Homeowner, pitch: Pitch): Promis
   try {
     const result = await transporter.sendMail({
       from: `"ScanInstead" <${process.env.GMAIL_USER}>`,
-      to: homeowner.email,
-      subject: `New Pitch from ${pitch.visitorName}${pitch.company ? ` (${pitch.company})` : ''}`,
-      html: emailHtml,
+      to: sanitizedHomeowner.email,
+      subject: `New Pitch from ${sanitizedPitch.visitorName}${sanitizedPitch.company ? ` (${sanitizedPitch.company})` : ''}`,
+      html: sanitizeEmailContent(emailHtml),
     });
     
     console.log('Email sent successfully:', result);

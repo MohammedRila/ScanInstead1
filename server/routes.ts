@@ -9,10 +9,41 @@ import { uploadToSupabase, serveFile } from "./services/supabase-storage";
 import { analyzePitch, performHiddenAnalysis, performDataIntelligenceAnalysis } from "./services/ai";
 import { dataMonitor } from "./services/data_monitor";
 import { getHomeownerAnalytics, getSalesmanLeaderboard, getRealtimeStats } from "./routes/supabase";
+import { body, param, validationResult } from "express-validator";
+import xss from "xss";
 
 import multer from "multer";
 import path from "path";
 import { promises as fs } from "fs";
+
+// Security validation middleware
+const validateRequest = (req: any, res: any, next: any) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Validation error',
+      errors: errors.array(),
+    });
+  }
+  next();
+};
+
+// UUID validation
+const validateUUID = param('id').isUUID().withMessage('Invalid ID format');
+
+// Input sanitization
+const sanitizeInput = (req: any, res: any, next: any) => {
+  // Sanitize all string inputs in body
+  if (req.body && typeof req.body === 'object') {
+    for (const key in req.body) {
+      if (typeof req.body[key] === 'string') {
+        req.body[key] = xss(req.body[key].trim());
+      }
+    }
+  }
+  next();
+};
 
 // Configure multer for temporary file uploads with expanded file type support
 const upload = multer({
@@ -53,7 +84,16 @@ const upload = multer({
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create homeowner and generate QR code
-  app.post("/api/create", async (req, res) => {
+  app.post("/api/create", 
+    [
+      body('fullName').isLength({ min: 1, max: 100 }).withMessage('Full name is required (max 100 characters)'),
+      body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
+      body('phone').optional().isMobilePhone().withMessage('Valid phone number required'),
+      body('notificationPreference').optional().isIn(['email', 'sms', 'both']).withMessage('Invalid notification preference'),
+      sanitizeInput,
+      validateRequest
+    ],
+    async (req, res) => {
     try {
       const validatedData = insertHomeownerSchema.parse(req.body);
       const homeowner = await storage.createHomeowner(validatedData);
@@ -88,7 +128,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get homeowner by ID
-  app.get("/api/homeowner/:id", async (req, res) => {
+  app.get("/api/homeowner/:id", 
+    [validateUUID, validateRequest],
+    async (req, res) => {
     try {
       const homeowner = await storage.getHomeowner(req.params.id);
       if (!homeowner) {
@@ -111,7 +153,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get pitches for homeowner (fast loading for dashboard)
-  app.get("/api/homeowner/:id/pitches", async (req, res) => {
+  app.get("/api/homeowner/:id/pitches", 
+    [validateUUID, validateRequest],
+    async (req, res) => {
     try {
       const pitches = await storage.getPitchesByHomeowner(req.params.id);
       
@@ -132,7 +176,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Submit pitch
-  app.post("/api/pitch/:id", upload.single('file'), async (req, res) => {
+  app.post("/api/pitch/:id", 
+    [
+      validateUUID,
+      body('visitorName').isLength({ min: 1, max: 100 }).withMessage('Visitor name is required (max 100 characters)'),
+      body('offer').isLength({ min: 1, max: 500 }).withMessage('Offer description is required (max 500 characters)'),
+      body('reason').isLength({ min: 1, max: 1000 }).withMessage('Reason is required (max 1000 characters)'),
+      body('company').optional().isLength({ max: 100 }).withMessage('Company name too long (max 100 characters)'),
+      body('visitorEmail').optional().isEmail().normalizeEmail().withMessage('Valid email required'),
+      body('visitorPhone').optional().isMobilePhone().withMessage('Valid phone number required'),
+      sanitizeInput,
+      validateRequest
+    ],
+    upload.single('file'), 
+    async (req, res) => {
     try {
       const homeownerId = req.params.id;
       const homeowner = await storage.getHomeowner(homeownerId);
@@ -285,7 +342,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Salesman registration route
-  app.post("/api/salesman/register", async (req, res) => {
+  app.post("/api/salesman/register", 
+    [
+      body('firstName').isLength({ min: 1, max: 50 }).withMessage('First name is required (max 50 characters)'),
+      body('lastName').isLength({ min: 1, max: 50 }).withMessage('Last name is required (max 50 characters)'),
+      body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
+      body('phone').isMobilePhone().withMessage('Valid phone number is required'),
+      body('businessName').isLength({ min: 1, max: 100 }).withMessage('Business name is required (max 100 characters)'),
+      body('businessType').isLength({ min: 1, max: 50 }).withMessage('Business type is required (max 50 characters)'),
+      sanitizeInput,
+      validateRequest
+    ],
+    async (req, res) => {
     try {
       const validatedData = insertSalesmanSchema.parse(req.body);
       const salesman = await storage.createSalesman(validatedData);
@@ -315,7 +383,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get salesman data
-  app.get("/api/salesman/:id", async (req, res) => {
+  app.get("/api/salesman/:id", 
+    [validateUUID, validateRequest],
+    async (req, res) => {
     try {
       const salesmanId = req.params.id;
       const salesman = await storage.getSalesman(salesmanId);
@@ -341,7 +411,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get salesman scan history
-  app.get("/api/salesman/:id/scans", async (req, res) => {
+  app.get("/api/salesman/:id/scans", 
+    [validateUUID, validateRequest],
+    async (req, res) => {
     try {
       const salesmanId = req.params.id;
       const scans = await storage.getScansBySalesman(salesmanId);
@@ -360,7 +432,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get salesman stats
-  app.get("/api/salesman/:id/stats", async (req, res) => {
+  app.get("/api/salesman/:id/stats", 
+    [validateUUID, validateRequest],
+    async (req, res) => {
     try {
       const salesmanId = req.params.id;
       const stats = await storage.getSalesmanStats(salesmanId);
@@ -379,7 +453,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Track QR code scan
-  app.post("/api/scan/:homeownerId", async (req, res) => {
+  app.post("/api/scan/:homeownerId", 
+    [
+      validateUUID,
+      body('salesmanId').isUUID().withMessage('Invalid salesman ID'),
+      body('location').optional().isLength({ max: 100 }).withMessage('Location too long (max 100 characters)'),
+      sanitizeInput,
+      validateRequest
+    ],
+    async (req, res) => {
     try {
       const homeownerId = req.params.homeownerId;
       const { salesmanId, location } = req.body;
