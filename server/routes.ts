@@ -5,7 +5,7 @@ import { insertHomeownerSchema, insertPitchSchema, insertSalesmanSchema, insertS
 import { generateQRCode } from "./services/qr";
 import { sendPitchEmail, sendSalesmanVerificationEmail, sendHomeownerWelcomeEmail } from "./services/email";
 import { sendPitchSMS } from "./services/sms";
-import { uploadToFirebase } from "./services/firebase";
+import { uploadToSupabase, serveFile } from "./services/supabase-storage";
 import { analyzePitch, performHiddenAnalysis, performDataIntelligenceAnalysis } from "./services/ai";
 import { dataMonitor } from "./services/data_monitor";
 import { getHomeownerAnalytics, getSalesmanLeaderboard, getRealtimeStats } from "./routes/supabase";
@@ -147,10 +147,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let fileUrl: string | undefined;
       let fileName: string | undefined;
 
-      // Upload file to Firebase Storage if provided
+      // Upload file to Supabase Storage if provided
       if (req.file) {
         try {
-          fileUrl = await uploadToFirebase(req.file);
+          fileUrl = await uploadToSupabase(req.file);
           fileName = req.file.originalname;
         } catch (uploadError) {
           console.error('Error uploading file:', uploadError);
@@ -428,6 +428,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/homeowner/:id/analytics", getHomeownerAnalytics);
   app.get("/api/leaderboard", getSalesmanLeaderboard);
   app.get("/api/realtime/stats", getRealtimeStats);
+
+  // Serve uploaded files
+  app.get("/api/uploads/:filename", async (req, res) => {
+    try {
+      const { filename } = req.params;
+      const fileData = await serveFile(filename);
+      
+      if (!fileData) {
+        return res.status(404).json({ error: 'File not found' });
+      }
+      
+      res.setHeader('Content-Type', fileData.mimetype);
+      res.send(fileData.buffer);
+    } catch (error) {
+      console.error('Error serving file:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
 
   // Serve demo video
   app.get("/api/demo/video", async (req, res) => {

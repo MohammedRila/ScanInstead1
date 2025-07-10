@@ -24,7 +24,7 @@ ScanInstead is a modern full-stack web application that replaces traditional doo
 
 ### Database & Storage
 - **Primary Database**: Supabase PostgreSQL (relational database)
-- **File Storage**: Firebase Storage for uploaded attachments
+- **File Storage**: Supabase Storage for uploaded attachments
 - **Schema Validation**: Zod for runtime type checking and validation
 - **ORM**: Drizzle ORM for type-safe database operations
 
@@ -90,12 +90,12 @@ ScanInstead is a modern full-stack web application that replaces traditional doo
 ## External Dependencies
 
 ### Database & Storage
-- **Supabase**: PostgreSQL database hosting
-- **Firebase Admin SDK**: File Storage only
-- **Firebase Service Account**: Authentication via JSON credentials
+- **Supabase**: PostgreSQL database hosting and file storage
+- **Supabase Storage**: File upload and management system
+- **Supabase API**: Authentication and real-time features
 
 ### Communication Services
-- **Resend**: Email delivery service for pitch notifications
+- **Gmail SMTP**: Email delivery service for pitch notifications
 - **Twilio**: SMS notifications (optional, feature-flagged)
 
 ### Frontend Libraries
@@ -127,9 +127,12 @@ ScanInstead is a modern full-stack web application that replaces traditional doo
 ### Environment Configuration
 Required environment variables:
 - `BASE_URL`: Your app's domain (e.g., https://your-app.replit.app) for QR code generation
-- `FIREBASE_SERVICE_ACCOUNT_JSON`: Firebase authentication
-- `FIREBASE_STORAGE_BUCKET`: Firebase Storage bucket name
-- `RESEND_API_KEY`: Resend API key for email delivery
+- `SUPABASE_URL`: Supabase project URL
+- `SUPABASE_ANON_KEY`: Supabase anonymous key
+- `SUPABASE_SERVICE_ROLE_KEY`: Supabase service role key
+- `GMAIL_USER`: Gmail account for email delivery
+- `GMAIL_PASS`: Gmail app password for SMTP
+- `HUGGINGFACE_API_KEY`: Hugging Face API key for AI analysis
 - `TWILIO_*`: SMS service configuration (optional)
 - `DATABASE_URL`: Supabase PostgreSQL connection string
 
@@ -203,6 +206,10 @@ Changelog:
 - July 10, 2025. Added advanced analytics endpoints with sentiment analysis and business intelligence dashboards
 - July 10, 2025. Implemented salesman leaderboard system and real-time statistics tracking through Supabase API
 - July 10, 2025. Created dual database approach: Drizzle ORM for operations + Supabase client for real-time features
+- July 10, 2025. Completely removed Firebase and all related dependencies - VERIFIED working
+- July 10, 2025. Migrated file storage from Firebase to Supabase Storage with full integration
+- July 10, 2025. Updated environment configuration to use only Supabase services
+- July 10, 2025. Integrated WhatsApp demo video with streaming support on home page
 - July 06, 2025. Initial setup
 ```
 
