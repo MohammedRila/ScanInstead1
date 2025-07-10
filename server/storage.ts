@@ -22,6 +22,8 @@ export interface IStorage {
   getPitchesByHomeowner(homeownerId: string): Promise<Pitch[]>;
   createSalesman(salesman: InsertSalesman): Promise<Salesman>;
   getSalesman(id: string): Promise<Salesman | undefined>;
+  getSalesmanByEmail(email: string): Promise<Salesman | undefined>;
+  verifySalesman(id: string): Promise<void>;
   updateSalesmanScans(id: string): Promise<void>;
   createScanTracking(scan: InsertScanTracking): Promise<ScanTracking>;
   getScansByHomeowner(homeownerId: string): Promise<ScanTracking[]>;
@@ -242,6 +244,17 @@ export class SupabaseStorage implements IStorage {
   async getSalesman(id: string): Promise<Salesman | undefined> {
     const result = await db.select().from(salesmen).where(eq(salesmen.id, id)).limit(1);
     return result[0] || undefined;
+  }
+
+  async getSalesmanByEmail(email: string): Promise<Salesman | undefined> {
+    const result = await db.select().from(salesmen).where(eq(salesmen.email, email)).limit(1);
+    return result[0] || undefined;
+  }
+
+  async verifySalesman(id: string): Promise<void> {
+    await db.update(salesmen)
+      .set({ isVerified: true })
+      .where(eq(salesmen.id, id));
   }
 
   async updateSalesmanScans(id: string): Promise<void> {

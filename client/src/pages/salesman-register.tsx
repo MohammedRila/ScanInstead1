@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertSalesmanSchema, type InsertSalesman } from "@shared/schema";
+import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { Briefcase, CheckCircle, Building, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -48,7 +49,10 @@ const BUSINESS_TYPES = [
 export default function SalesmanRegister() {
   const [location, setLocation] = useLocation();
   const [isRegistered, setIsRegistered] = useState(false);
+  const [needsVerification, setNeedsVerification] = useState(false);
   const [salesmanId, setSalesmanId] = useState<string | null>(null);
+  const [salesmanEmail, setSalesmanEmail] = useState<string>("");
+  const [showSignIn, setShowSignIn] = useState(false);
   const { toast } = useToast();
 
   // Check if user is already registered (from localStorage)
@@ -83,20 +87,110 @@ export default function SalesmanRegister() {
       }
     },
     onSuccess: (data) => {
+      if (data.needsVerification) {
+        setNeedsVerification(true);
+        setSalesmanEmail(data.salesman.email);
+        setSalesmanId(data.salesman.id);
+        toast({
+          title: "Registration Successful!",
+          description: "Please check your email to verify your account before signing in.",
+        });
+      } else if (data.existingUser) {
+        toast({
+          title: "Account Already Exists",
+          description: "Please use the sign-in option instead.",
+        });
+        setShowSignIn(true);
+      } else {
+        setIsRegistered(true);
+        setSalesmanId(data.salesman.id);
+        localStorage.setItem('salesmanId', data.salesman.id);
+        toast({
+          title: "Registration Complete!",
+          description: "You can now scan QR codes throughout the neighborhood.",
+        });
+      }
+    },
+    onError: (error: any) => {
+      if (error.status === 409) {
+        setShowSignIn(true);
+        toast({
+          title: "Account Already Exists",
+          description: "Please use the sign-in option instead.",
+        });
+      } else {
+        toast({
+          title: "Registration Failed",
+          description: error instanceof Error ? error.message : "Please try again",
+          variant: "destructive",
+        });
+      }
+    },
+  });
+
+  const verifyMutation = useMutation({
+    mutationFn: async (email: string) => {
+      const response = await apiRequest("POST", "/api/salesman/verify", { email });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setNeedsVerification(false);
       setIsRegistered(true);
       setSalesmanId(data.salesman.id);
       localStorage.setItem('salesmanId', data.salesman.id);
       toast({
-        title: "Registration Complete!",
-        description: "You can now scan QR codes throughout the neighborhood. Your scans will be tracked in your dashboard.",
+        title: "Email Verified!",
+        description: "Your account is now active. You can start scanning QR codes.",
       });
     },
     onError: (error) => {
       toast({
-        title: "Registration Failed",
+        title: "Verification Failed",
         description: error instanceof Error ? error.message : "Please try again",
         variant: "destructive",
       });
+    },
+  });
+
+  const signInMutation = useMutation({
+    mutationFn: async (email: string) => {
+      const response = await apiRequest("POST", "/api/salesman/signin", { email });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setIsRegistered(true);
+      setSalesmanId(data.salesman.id);
+      localStorage.setItem('salesmanId', data.salesman.id);
+      toast({
+        title: "Welcome Back!",
+        description: "You can now access your dashboard.",
+      });
+    },
+    onError: (error: any) => {
+      if (error.status === 403) {
+        setNeedsVerification(true);
+        setSalesmanEmail(signInForm.getValues("email"));
+        toast({
+          title: "Email Not Verified",
+          description: "Please verify your email address first.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Sign In Failed",
+          description: error instanceof Error ? error.message : "Please try again",
+          variant: "destructive",
+        });
+      }
+    },
+  });
+
+  const signInForm = useForm<{ email: string }>({
+    resolver: zodResolver(z.object({
+      email: z.string().email("Valid email is required"),
+    })),
+    defaultValues: {
+      email: "",
     },
   });
 
@@ -104,6 +198,48 @@ export default function SalesmanRegister() {
     setLocation(`/salesman/dashboard/${salesmanId}`);
   };
 
+  // Email verification screen
+  if (needsVerification && salesmanEmail) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+        <div className="w-full max-w-md text-center">
+          <div className="mx-auto w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center mb-6">
+            <Briefcase className="w-12 h-12 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            Check Your Email
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
+            We've sent a verification email to <strong>{salesmanEmail}</strong>. 
+            Please check your inbox and click verify to activate your account.
+          </p>
+          
+          <div className="space-y-4">
+            <Button 
+              onClick={() => verifyMutation.mutate(salesmanEmail)}
+              disabled={verifyMutation.isPending}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              {verifyMutation.isPending ? "Verifying..." : "I've Verified My Email"}
+            </Button>
+            
+            <Button 
+              variant="outline"
+              onClick={() => {
+                setNeedsVerification(false);
+                setShowSignIn(true);
+              }}
+              className="w-full"
+            >
+              Back to Sign In
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Success screen after registration/verification
   if (isRegistered && salesmanId) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
@@ -112,7 +248,7 @@ export default function SalesmanRegister() {
             <CheckCircle className="w-12 h-12 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            🎉 Welcome to ScanInstead!
+            Welcome to ScanInstead!
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
             You're now registered and can start scanning QR codes in the neighborhood. 
@@ -181,17 +317,67 @@ export default function SalesmanRegister() {
           </Card>
         </div>
 
-        {/* Registration Form */}
+        {/* Registration/Sign-in Form */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Create Your Account</CardTitle>
+            <div className="flex items-center justify-between mb-4">
+              <Button
+                variant={!showSignIn ? "default" : "outline"}
+                onClick={() => setShowSignIn(false)}
+                className="flex-1 mr-2"
+              >
+                Create Account
+              </Button>
+              <Button
+                variant={showSignIn ? "default" : "outline"}
+                onClick={() => setShowSignIn(true)}
+                className="flex-1 ml-2"
+              >
+                Sign In
+              </Button>
+            </div>
+            <CardTitle className="text-2xl">
+              {showSignIn ? "Welcome Back" : "Create Your Account"}
+            </CardTitle>
             <CardDescription>
-              This information will be saved so you don't need to re-enter it for each scan
+              {showSignIn 
+                ? "Sign in to access your service provider dashboard"
+                : "This information will be saved so you don't need to re-enter it for each scan"
+              }
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit((data) => registerMutation.mutate(data))} className="space-y-4">
+            {showSignIn ? (
+              // Sign-in form
+              <Form {...signInForm}>
+                <form onSubmit={signInForm.handleSubmit((data) => signInMutation.mutate(data.email))} className="space-y-4">
+                  <FormField
+                    control={signInForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email Address</FormLabel>
+                        <FormControl>
+                          <Input {...field} type="email" placeholder="Enter your email" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-orange-600 hover:bg-orange-700"
+                    disabled={signInMutation.isPending}
+                  >
+                    {signInMutation.isPending ? "Signing In..." : "Sign In"}
+                  </Button>
+                </form>
+              </Form>
+            ) : (
+              // Registration form
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit((data) => registerMutation.mutate(data))} className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -296,8 +482,9 @@ export default function SalesmanRegister() {
                 >
                   {registerMutation.isPending ? "Creating Account..." : "Create My Account"}
                 </Button>
-              </form>
-            </Form>
+                </form>
+              </Form>
+            )}
           </CardContent>
         </Card>
 

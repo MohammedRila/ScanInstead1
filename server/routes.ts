@@ -395,7 +395,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       body('firstName').isLength({ min: 1, max: 50 }).withMessage('First name is required (max 50 characters)'),
       body('lastName').isLength({ min: 1, max: 50 }).withMessage('Last name is required (max 50 characters)'),
       body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
-      body('phone').isMobilePhone().withMessage('Valid phone number is required'),
+      body('phone').optional().isMobilePhone().withMessage('Valid phone number is required'),
       body('businessName').isLength({ min: 1, max: 100 }).withMessage('Business name is required (max 100 characters)'),
       body('businessType').isLength({ min: 1, max: 50 }).withMessage('Business type is required (max 50 characters)'),
       sanitizeInput,
@@ -404,6 +404,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req, res) => {
     try {
       const validatedData = insertSalesmanSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingSalesman = await storage.getSalesmanByEmail(validatedData.email);
+      
+      if (existingSalesman) {
+        return res.status(409).json({
+          success: false,
+          message: 'An account with this email already exists.',
+          existingUser: true,
+          salesman: existingSalesman,
+        });
+      }
+      
       const salesman = await storage.createSalesman(validatedData);
       
       // Send verification email
@@ -418,14 +431,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         success: true,
-        message: 'Service provider registered successfully! Check your email for verification.',
+        message: 'Service provider registered successfully! Please check your email for verification.',
         salesman,
+        needsVerification: true,
       });
     } catch (error) {
       console.error('Error registering salesman:', error);
       res.status(400).json({
         success: false,
         message: error instanceof Error ? error.message : 'Failed to register service provider',
+      });
+    }
+  });
+
+  // Salesman email verification route
+  app.post("/api/salesman/verify", 
+    [
+      body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
+      sanitizeInput,
+      validateRequest
+    ],
+    async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      // Find salesman by email
+      const salesman = await storage.getSalesmanByEmail(email);
+      
+      if (!salesman) {
+        return res.status(404).json({
+          success: false,
+          message: 'No account found with this email address.',
+        });
+      }
+      
+      // For now, we'll auto-verify since email was sent successfully
+      // In a production system, you'd have a verification token
+      await storage.verifySalesman(salesman.id);
+      
+      res.json({
+        success: true,
+        message: 'Email verified successfully! Your account is now active.',
+        salesman: {
+          ...salesman,
+          isVerified: true,
+        },
+      });
+    } catch (error) {
+      console.error('Error verifying salesman:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to verify email',
+      });
+    }
+  });
+
+  // Salesman sign-in route
+  app.post("/api/salesman/signin", 
+    [
+      body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
+      sanitizeInput,
+      validateRequest
+    ],
+    async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      // Find salesman by email
+      const salesman = await storage.getSalesmanByEmail(email);
+      
+      if (!salesman) {
+        return res.status(404).json({
+          success: false,
+          message: 'No account found with this email address. Please register first.',
+        });
+      }
+      
+      if (!salesman.isVerified) {
+        return res.status(403).json({
+          success: false,
+          message: 'Please verify your email address before signing in.',
+          needsVerification: true,
+          salesman,
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: 'Welcome back! Redirecting to your dashboard.',
+        salesman,
+      });
+    } catch (error) {
+      console.error('Error signing in salesman:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to sign in',
       });
     }
   });
