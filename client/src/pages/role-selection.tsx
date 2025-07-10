@@ -63,7 +63,7 @@ export default function RoleSelection() {
               </div>
               
               <Button asChild className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 text-lg">
-                <Link href="/create">
+                <Link href="/homeowner/register">
                   Create My QR Code
                 </Link>
               </Button>
