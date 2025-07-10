@@ -12,8 +12,8 @@ import compression from "compression";
 
 const app = express();
 
-// Trust proxy for rate limiting accuracy (always enable for better security)
-app.set('trust proxy', true);
+// Trust proxy configuration for Replit environment
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet({
@@ -33,7 +33,7 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 
-// Rate limiting
+// Rate limiting with proper trust proxy configuration
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
@@ -42,6 +42,7 @@ const limiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  trustProxy: true,
 });
 
 const strictLimiter = rateLimit({
@@ -52,6 +53,7 @@ const strictLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  trustProxy: true,
 });
 
 app.use(limiter);
