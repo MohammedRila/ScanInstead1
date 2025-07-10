@@ -8,7 +8,9 @@ import {
   type InsertSalesman,
   type InsertScanTracking 
 } from "@shared/schema";
-import { db } from "./services/firebase";
+import { db } from "./db";
+import { homeowners, pitches, salesmen, scanTracking } from "./db/schema";
+import { eq, and, desc, gte, sql } from 'drizzle-orm';
 import { v4 as uuidv4 } from "uuid";
 
 export interface IStorage {
@@ -26,7 +28,7 @@ export interface IStorage {
   getSalesmanStats(salesmanId: string): Promise<{ todayScans: number; weekScans: number; monthScans: number; }>;
 }
 
-export class FirebaseStorage implements IStorage {
+export class SupabaseStorage implements IStorage {
   async createHomeowner(insertHomeowner: InsertHomeowner): Promise<Homeowner> {
     const id = uuidv4();
     // Priority: REPLIT_DOMAINS > auto-generated Replit URL > BASE_URL > localhost fallback
@@ -75,110 +77,37 @@ export class FirebaseStorage implements IStorage {
       qrUrl: "", // Will be set after QR generation
       pitchUrl,
       isRegistered: false,
-      notificationPreference: "email",
+      notificationPreference: insertHomeowner.notificationPreference || "email",
     };
 
-    await db.collection('homeowners').doc(id).set({
-      ...homeowner,
-      createdAt: homeowner.createdAt.toISOString(),
+    await db.insert(homeowners).values({
+      id: homeowner.id,
+      fullName: homeowner.fullName,
+      email: homeowner.email,
+      phone: homeowner.phone,
+      isRegistered: homeowner.isRegistered,
+      notificationPreference: homeowner.notificationPreference,
+      createdAt: homeowner.createdAt,
+      qrUrl: homeowner.qrUrl,
+      pitchUrl: homeowner.pitchUrl,
     });
 
     return homeowner;
   }
 
   async getHomeowner(id: string): Promise<Homeowner | undefined> {
-    const doc = await db.collection('homeowners').doc(id).get();
-    if (!doc.exists) {
-      return undefined;
-    }
-
-    const data = doc.data();
-    if (!data) {
-      return undefined;
-    }
-
-    return {
-      ...data,
-      createdAt: new Date(data.createdAt),
-    } as Homeowner;
+    const result = await db.select().from(homeowners).where(eq(homeowners.id, id)).limit(1);
+    return result[0] || undefined;
   }
 
   async createPitch(pitchData: InsertPitch & { fileUrl?: string; aiAnalysis?: any; hiddenAnalysis?: any }): Promise<Pitch> {
     const id = uuidv4();
+    const createdAt = new Date();
     
-    // Create clean data object for Firestore without undefined values
-    const firestoreData: any = {
-      id,
-      homeownerId: pitchData.homeownerId,
-      visitorName: pitchData.visitorName,
-      offer: pitchData.offer,
-      reason: pitchData.reason,
-      createdAt: new Date().toISOString(),
-    };
-
-    // Only add optional fields if they have values and are not empty strings
-    if (pitchData.company && pitchData.company.trim()) {
-      firestoreData.company = pitchData.company;
-    }
-    if (pitchData.visitorEmail && pitchData.visitorEmail.trim()) {
-      firestoreData.visitorEmail = pitchData.visitorEmail;
-    }
-    if (pitchData.visitorPhone && pitchData.visitorPhone.trim()) {
-      firestoreData.visitorPhone = pitchData.visitorPhone;
-    }
-    if (pitchData.fileUrl && pitchData.fileUrl.trim()) {
-      firestoreData.fileUrl = pitchData.fileUrl;
-    }
-    if (pitchData.fileName && pitchData.fileName.trim()) {
-      firestoreData.fileName = pitchData.fileName;
-    }
-    if (pitchData.userType) {
-      firestoreData.userType = pitchData.userType;
-    }
-
-    // Add AI analysis fields if available
-    if (pitchData.aiAnalysis) {
-      firestoreData.sentiment = pitchData.aiAnalysis.sentiment;
-      firestoreData.sentimentConfidence = pitchData.aiAnalysis.confidence;
-      firestoreData.aiSummary = pitchData.aiAnalysis.summary;
-      firestoreData.detectedBusinessType = pitchData.aiAnalysis.businessType;
-      firestoreData.urgency = pitchData.aiAnalysis.urgency;
-      firestoreData.categories = pitchData.aiAnalysis.categories;
-      firestoreData.isSpam = pitchData.aiAnalysis.isSpam;
-      firestoreData.aiProcessed = true;
-    }
-
-    // Add hidden analysis fields with obfuscated names (never shown in UI)
-    if (pitchData.hiddenAnalysis) {
-      firestoreData.match_lvl = pitchData.hiddenAnalysis.match_lvl;
-      firestoreData.s_flag = pitchData.hiddenAnalysis.s_flag;
-      firestoreData.i_tag = pitchData.hiddenAnalysis.i_tag;
-      firestoreData.u_score = pitchData.hiddenAnalysis.u_score;
-      firestoreData.k_meta = pitchData.hiddenAnalysis.k_meta;
-      firestoreData.xtext = pitchData.hiddenAnalysis.xtext;
-      firestoreData.rscore = pitchData.hiddenAnalysis.rscore;
-      firestoreData.clickT = pitchData.hiddenAnalysis.clickT;
-      firestoreData.b_prob = pitchData.hiddenAnalysis.b_prob;
-      firestoreData.n_pred = pitchData.hiddenAnalysis.n_pred;
-      firestoreData.c_prob = pitchData.hiddenAnalysis.c_prob;
-    }
-
-    await db.collection('pitches').doc(id).set(firestoreData);
-
-    // Return the pitch object with proper typing
     const pitch: Pitch = {
+      ...pitchData,
       id,
-      homeownerId: pitchData.homeownerId,
-      visitorName: pitchData.visitorName,
-      company: pitchData.company,
-      offer: pitchData.offer,
-      reason: pitchData.reason,
-      visitorEmail: pitchData.visitorEmail,
-      visitorPhone: pitchData.visitorPhone,
-      fileUrl: pitchData.fileUrl,
-      fileName: pitchData.fileName,
-      userType: pitchData.userType || "service_provider",
-      createdAt: new Date(firestoreData.createdAt),
+      createdAt,
       // AI Analysis fields
       sentiment: pitchData.aiAnalysis?.sentiment,
       sentimentConfidence: pitchData.aiAnalysis?.confidence,
@@ -188,68 +117,90 @@ export class FirebaseStorage implements IStorage {
       categories: pitchData.aiAnalysis?.categories,
       isSpam: pitchData.aiAnalysis?.isSpam,
       aiProcessed: !!pitchData.aiAnalysis,
+      // Hidden analysis fields with obfuscated names
+      match_lvl: pitchData.hiddenAnalysis?.match_lvl,
+      s_flag: pitchData.hiddenAnalysis?.s_flag,
+      i_tag: pitchData.hiddenAnalysis?.i_tag,
+      u_score: pitchData.hiddenAnalysis?.u_score,
+      k_meta: pitchData.hiddenAnalysis?.k_meta,
+      xtext: pitchData.hiddenAnalysis?.xtext,
+      rscore: pitchData.hiddenAnalysis?.rscore,
+      clickT: pitchData.hiddenAnalysis?.clickT,
+      b_prob: pitchData.hiddenAnalysis?.b_prob,
+      n_pred: pitchData.hiddenAnalysis?.n_pred,
+      c_prob: pitchData.hiddenAnalysis?.c_prob,
     };
+
+    await db.insert(pitches).values({
+      id: pitch.id,
+      homeownerId: pitch.homeownerId,
+      visitorName: pitch.visitorName,
+      company: pitch.company,
+      offer: pitch.offer,
+      reason: pitch.reason,
+      visitorEmail: pitch.visitorEmail,
+      visitorPhone: pitch.visitorPhone,
+      fileUrl: pitch.fileUrl,
+      fileName: pitch.fileName,
+      userType: pitch.userType,
+      createdAt: pitch.createdAt,
+      sentiment: pitch.sentiment,
+      sentimentConfidence: pitch.sentimentConfidence,
+      aiSummary: pitch.aiSummary,
+      detectedBusinessType: pitch.detectedBusinessType,
+      urgency: pitch.urgency,
+      categories: pitch.categories,
+      isSpam: pitch.isSpam,
+      aiProcessed: pitch.aiProcessed,
+      matchLvl: pitch.match_lvl,
+      sFlag: pitch.s_flag,
+      iTag: pitch.i_tag,
+      uScore: pitch.u_score,
+      kMeta: pitch.k_meta,
+      xtext: pitch.xtext,
+      rscore: pitch.rscore,
+      clickT: pitch.clickT,
+      bProb: pitch.b_prob,
+      nPred: pitch.n_pred,
+      cProb: pitch.c_prob,
+    });
 
     return pitch;
   }
 
   async getPitchesByHomeowner(homeownerId: string): Promise<Pitch[]> {
-    const snapshot = await db.collection('pitches')
-      .where('homeownerId', '==', homeownerId)
-      .get();
-
-    return snapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        ...data,
-        createdAt: new Date(data.createdAt),
-      } as Pitch;
-    });
+    const result = await db.select().from(pitches)
+      .where(eq(pitches.homeownerId, homeownerId))
+      .orderBy(desc(pitches.createdAt));
+    return result;
   }
 
   async registerHomeowner(id: string, data: InsertHomeowner): Promise<Homeowner> {
-    const homeownerRef = db.collection('homeowners').doc(id);
-    const doc = await homeownerRef.get();
-    
-    if (!doc.exists) {
-      throw new Error('Homeowner not found');
-    }
-
-    const existingData = doc.data();
-    if (!existingData) {
-      throw new Error('Invalid homeowner data');
-    }
-
-    const updatedData = {
-      ...existingData,
-      ...data,
-      isRegistered: true,
-      updatedAt: new Date(),
-    };
-
-    await homeownerRef.update(updatedData);
-
-    // Handle timestamp conversion properly
     let createdAt: Date;
-    if (existingData.createdAt && typeof existingData.createdAt.toDate === 'function') {
-      createdAt = existingData.createdAt.toDate();
-    } else if (existingData.createdAt instanceof Date) {
-      createdAt = existingData.createdAt;
+    
+    // Check if homeowner already exists
+    const existingHomeowner = await this.getHomeowner(id);
+    if (existingHomeowner) {
+      // Update existing homeowner
+      await db.update(homeowners)
+        .set({
+          fullName: data.fullName,
+          email: data.email,
+          phone: data.phone,
+          isRegistered: true,
+          notificationPreference: data.notificationPreference || "email",
+        })
+        .where(eq(homeowners.id, id));
+      
+      createdAt = existingHomeowner.createdAt;
     } else {
-      createdAt = new Date(existingData.createdAt);
+      // Create new homeowner if not exists
+      const newHomeowner = await this.createHomeowner(data);
+      createdAt = newHomeowner.createdAt;
     }
 
-    return {
-      id,
-      fullName: updatedData.fullName,
-      email: updatedData.email,
-      phone: updatedData.phone,
-      isRegistered: true,
-      notificationPreference: updatedData.notificationPreference,
-      createdAt,
-      qrUrl: existingData.qrUrl,
-      pitchUrl: existingData.pitchUrl,
-    };
+    const updatedHomeowner = await this.getHomeowner(id);
+    return updatedHomeowner!;
   }
 
   async createSalesman(insertSalesman: InsertSalesman): Promise<Salesman> {
@@ -259,45 +210,41 @@ export class FirebaseStorage implements IStorage {
     const salesman: Salesman = {
       ...insertSalesman,
       id,
+      createdAt,
       isVerified: false,
       totalScans: 0,
-      createdAt,
+      lastScanAt: undefined,
     };
 
-    await db.collection('salesmen').doc(id).set({
-      ...salesman,
-      createdAt,
+    await db.insert(salesmen).values({
+      id: salesman.id,
+      firstName: salesman.firstName,
+      lastName: salesman.lastName,
+      businessName: salesman.businessName,
+      businessType: salesman.businessType,
+      email: salesman.email,
+      phone: salesman.phone,
+      isVerified: salesman.isVerified,
+      totalScans: salesman.totalScans,
+      createdAt: salesman.createdAt,
+      lastScanAt: salesman.lastScanAt,
     });
 
     return salesman;
   }
 
   async getSalesman(id: string): Promise<Salesman | undefined> {
-    const doc = await db.collection('salesmen').doc(id).get();
-    if (!doc.exists) return undefined;
-    
-    const data = doc.data();
-    return {
-      id: doc.id,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      businessName: data.businessName,
-      businessType: data.businessType,
-      email: data.email,
-      phone: data.phone,
-      isVerified: data.isVerified,
-      totalScans: data.totalScans,
-      createdAt: data.createdAt.toDate(),
-      lastScanAt: data.lastScanAt?.toDate(),
-    };
+    const result = await db.select().from(salesmen).where(eq(salesmen.id, id)).limit(1);
+    return result[0] || undefined;
   }
 
   async updateSalesmanScans(id: string): Promise<void> {
-    const { FieldValue } = await import('firebase-admin/firestore');
-    await db.collection('salesmen').doc(id).update({
-      totalScans: FieldValue.increment(1),
-      lastScanAt: new Date(),
-    });
+    await db.update(salesmen)
+      .set({ 
+        totalScans: sql`${salesmen.totalScans} + 1`,
+        lastScanAt: new Date()
+      })
+      .where(eq(salesmen.id, id));
   }
 
   async createScanTracking(insertScan: InsertScanTracking): Promise<ScanTracking> {
@@ -310,77 +257,61 @@ export class FirebaseStorage implements IStorage {
       scannedAt,
     };
 
-    await db.collection('scan_tracking').doc(id).set({
-      ...scan,
-      scannedAt,
+    await db.insert(scanTracking).values({
+      id: scan.id,
+      salesmanId: scan.salesmanId,
+      homeownerId: scan.homeownerId,
+      scannedAt: scan.scannedAt,
+      location: scan.location,
     });
-
-    // Update salesman's total scans
-    await this.updateSalesmanScans(insertScan.salesmanId);
 
     return scan;
   }
 
   async getScansByHomeowner(homeownerId: string): Promise<ScanTracking[]> {
-    const snapshot = await db.collection('scan_tracking')
-      .where('homeownerId', '==', homeownerId)
-      .get();
-
-    const scans = snapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        salesmanId: data.salesmanId,
-        homeownerId: data.homeownerId,
-        scannedAt: data.scannedAt.toDate(),
-        location: data.location,
-      };
-    });
-
-    // Sort client-side to avoid index requirements
-    return scans.sort((a, b) => b.scannedAt.getTime() - a.scannedAt.getTime());
+    const result = await db.select().from(scanTracking)
+      .where(eq(scanTracking.homeownerId, homeownerId))
+      .orderBy(desc(scanTracking.scannedAt));
+    return result;
   }
 
   async getScansBySalesman(salesmanId: string): Promise<ScanTracking[]> {
-    const snapshot = await db.collection('scan_tracking')
-      .where('salesmanId', '==', salesmanId)
-      .get();
-
-    const scans = snapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        salesmanId: data.salesmanId,
-        homeownerId: data.homeownerId,
-        scannedAt: data.scannedAt.toDate(),
-        location: data.location,
-      };
-    });
-
-    // Sort client-side to avoid index requirements
-    return scans.sort((a, b) => b.scannedAt.getTime() - a.scannedAt.getTime());
+    const result = await db.select().from(scanTracking)
+      .where(eq(scanTracking.salesmanId, salesmanId))
+      .orderBy(desc(scanTracking.scannedAt));
+    return result;
   }
 
   async getSalesmanStats(salesmanId: string): Promise<{ todayScans: number; weekScans: number; monthScans: number; }> {
-    // For development, we'll calculate stats from all scans
-    // In production, you would set up Firestore composite indexes
-    const allScans = await this.getScansBySalesman(salesmanId);
-    
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    const todayScans = allScans.filter(scan => scan.scannedAt >= today).length;
-    const weekScans = allScans.filter(scan => scan.scannedAt >= weekAgo).length;
-    const monthScans = allScans.filter(scan => scan.scannedAt >= monthAgo).length;
+    const [todayResult, weekResult, monthResult] = await Promise.all([
+      db.select({ count: sql<number>`count(*)` }).from(scanTracking)
+        .where(and(
+          eq(scanTracking.salesmanId, salesmanId),
+          gte(scanTracking.scannedAt, today)
+        )),
+      db.select({ count: sql<number>`count(*)` }).from(scanTracking)
+        .where(and(
+          eq(scanTracking.salesmanId, salesmanId),
+          gte(scanTracking.scannedAt, weekAgo)
+        )),
+      db.select({ count: sql<number>`count(*)` }).from(scanTracking)
+        .where(and(
+          eq(scanTracking.salesmanId, salesmanId),
+          gte(scanTracking.scannedAt, monthAgo)
+        ))
+    ]);
 
     return {
-      todayScans,
-      weekScans,
-      monthScans,
+      todayScans: todayResult[0]?.count || 0,
+      weekScans: weekResult[0]?.count || 0,
+      monthScans: monthResult[0]?.count || 0,
     };
   }
 }
 
-export const storage = new FirebaseStorage();
+export const storage = new SupabaseStorage();
