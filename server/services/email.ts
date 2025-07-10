@@ -55,7 +55,7 @@ export async function sendHomeownerWelcomeEmail(homeowner: any): Promise<void> {
              style="background-color: #8B5CF6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; margin-right: 10px;">
             View Your QR Code
           </a>
-          <a href="${process.env.BASE_URL || 'https://scaninstead.com'}/homeowner/${homeowner.id}" 
+          <a href="${process.env.BASE_URL || 'https://scaninstead.com'}/homeowner/dashboard/${homeowner.id}" 
              style="background-color: #10B981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
             Access Dashboard
           </a>
@@ -126,7 +126,7 @@ export async function sendSalesmanVerificationEmail(salesman: any): Promise<void
         </div>
         
         <div style="text-align: center; margin-top: 30px;">
-          <a href="${process.env.BASE_URL || 'https://scaninstead.com'}/salesman/${salesman.id}" 
+          <a href="${process.env.BASE_URL || 'https://scaninstead.com'}/salesman/dashboard/${salesman.id}" 
              style="background-color: #10B981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
             Access Your Dashboard
           </a>
