@@ -8,6 +8,7 @@ import { sendPitchSMS } from "./services/sms";
 import { uploadToFirebase } from "./services/firebase";
 import { analyzePitch, performHiddenAnalysis, performDataIntelligenceAnalysis } from "./services/ai";
 import { dataMonitor } from "./services/data_monitor";
+import { getHomeownerAnalytics, getSalesmanLeaderboard, getRealtimeStats } from "./routes/supabase";
 
 import multer from "multer";
 import path from "path";
@@ -422,6 +423,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
+  // Enhanced Supabase API routes
+  app.get("/api/homeowner/:id/analytics", getHomeownerAnalytics);
+  app.get("/api/leaderboard", getSalesmanLeaderboard);
+  app.get("/api/realtime/stats", getRealtimeStats);
 
   const httpServer = createServer(app);
   return httpServer;
