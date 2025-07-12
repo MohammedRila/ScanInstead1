@@ -22,15 +22,12 @@ export function Header() {
               <Link href="/" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors font-medium">
                 Home
               </Link>
-              <Link href="/role-selection" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors font-medium">
-                Create QR
-              </Link>
             </nav>
 
             <div className="flex items-center space-x-3">
               <DarkModeToggle />
               <Button asChild size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md">
-                <Link href="/role-selection">Get Started</Link>
+                <Link href="/get-started">Get Started</Link>
               </Button>
             </div>
           </div>
