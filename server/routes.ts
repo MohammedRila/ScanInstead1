@@ -291,18 +291,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
                        businessName.toLowerCase().includes('solar') ? 'solar' :
                        businessName.toLowerCase().includes('security') ? 'security' : 'service',
           summary: pitchContent.substring(0, 100) + '...',
-          isSpam: false,
-          aiProcessed: true
+          isSpam: false
         };
 
         // Create basic hidden analysis
         hiddenAnalysis = {
           match_lvl: 0.8,
-          s_flag: false,
+          s_flag: 0.0,
           i_tag: 'service_request',
           u_score: 0.6,
           k_meta: 'business_pitch',
-          xtext: pitchContent.length,
+          xtext: pitchContent.substring(0, 100),
           rscore: 0.75,
           clickT: 0,
           b_prob: 0.1,

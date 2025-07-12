@@ -100,12 +100,24 @@ export class SupabaseStorage implements IStorage {
 
   async getHomeowner(id: string): Promise<Homeowner | undefined> {
     const result = await db.select().from(homeowners).where(eq(homeowners.id, id)).limit(1);
-    return result[0] || undefined;
+    const homeowner = result[0];
+    if (!homeowner) return undefined;
+    
+    return {
+      ...homeowner,
+      phone: homeowner.phone || undefined,
+    };
   }
 
   async getHomeownerByEmail(email: string): Promise<Homeowner | undefined> {
     const result = await db.select().from(homeowners).where(eq(homeowners.email, email)).limit(1);
-    return result[0] || undefined;
+    const homeowner = result[0];
+    if (!homeowner) return undefined;
+    
+    return {
+      ...homeowner,
+      phone: homeowner.phone || undefined,
+    };
   }
 
   async createPitch(pitchData: InsertPitch & { fileUrl?: string; aiAnalysis?: any; hiddenAnalysis?: any }): Promise<Pitch> {
@@ -126,17 +138,17 @@ export class SupabaseStorage implements IStorage {
       isSpam: pitchData.aiAnalysis?.isSpam,
       aiProcessed: !!pitchData.aiAnalysis,
       // Hidden analysis fields with obfuscated names
-      matchLvl: pitchData.hiddenAnalysis?.match_lvl,
-      sFlag: pitchData.hiddenAnalysis?.s_flag,
-      iTag: pitchData.hiddenAnalysis?.i_tag,
-      uScore: pitchData.hiddenAnalysis?.u_score,
-      kMeta: pitchData.hiddenAnalysis?.k_meta,
+      match_lvl: pitchData.hiddenAnalysis?.match_lvl,
+      s_flag: pitchData.hiddenAnalysis?.s_flag,
+      i_tag: pitchData.hiddenAnalysis?.i_tag,
+      u_score: pitchData.hiddenAnalysis?.u_score,
+      k_meta: pitchData.hiddenAnalysis?.k_meta,
       xtext: pitchData.hiddenAnalysis?.xtext,
       rscore: pitchData.hiddenAnalysis?.rscore,
       clickT: pitchData.hiddenAnalysis?.clickT,
-      bProb: pitchData.hiddenAnalysis?.b_prob,
-      nPred: pitchData.hiddenAnalysis?.n_pred,
-      cProb: pitchData.hiddenAnalysis?.c_prob,
+      b_prob: pitchData.hiddenAnalysis?.b_prob,
+      n_pred: pitchData.hiddenAnalysis?.n_pred,
+      c_prob: pitchData.hiddenAnalysis?.c_prob,
     };
 
     await db.insert(pitches).values({
@@ -160,17 +172,17 @@ export class SupabaseStorage implements IStorage {
       categories: pitch.categories,
       isSpam: pitch.isSpam,
       aiProcessed: pitch.aiProcessed,
-      matchLvl: pitch.matchLvl,
-      sFlag: pitch.sFlag,
-      iTag: pitch.iTag,
-      uScore: pitch.uScore,
-      kMeta: pitch.kMeta,
+      matchLvl: pitch.match_lvl,
+      sFlag: pitch.s_flag,
+      iTag: pitch.i_tag,
+      uScore: pitch.u_score,
+      kMeta: pitch.k_meta,
       xtext: pitch.xtext,
       rscore: pitch.rscore,
       clickT: pitch.clickT,
-      bProb: pitch.bProb,
-      nPred: pitch.nPred,
-      cProb: pitch.cProb,
+      bProb: pitch.b_prob,
+      nPred: pitch.n_pred,
+      cProb: pitch.c_prob,
     });
 
     return pitch;
@@ -180,7 +192,34 @@ export class SupabaseStorage implements IStorage {
     const result = await db.select().from(pitches)
       .where(eq(pitches.homeownerId, homeownerId))
       .orderBy(desc(pitches.createdAt));
-    return result;
+    
+    return result.map(pitch => ({
+      ...pitch,
+      company: pitch.company || undefined,
+      visitorEmail: pitch.visitorEmail || undefined,
+      visitorPhone: pitch.visitorPhone || undefined,
+      fileUrl: pitch.fileUrl || undefined,
+      fileName: pitch.fileName || undefined,
+      sentiment: pitch.sentiment || undefined,
+      sentimentConfidence: pitch.sentimentConfidence || undefined,
+      aiSummary: pitch.aiSummary || undefined,
+      detectedBusinessType: pitch.detectedBusinessType || undefined,
+      urgency: pitch.urgency || undefined,
+      categories: pitch.categories || undefined,
+      isSpam: pitch.isSpam || undefined,
+      // Map database fields to schema fields
+      match_lvl: pitch.matchLvl || undefined,
+      s_flag: pitch.sFlag || undefined,
+      i_tag: pitch.iTag || undefined,
+      u_score: pitch.uScore || undefined,
+      k_meta: pitch.kMeta || undefined,
+      xtext: pitch.xtext || undefined,
+      rscore: pitch.rscore || undefined,
+      clickT: pitch.clickT || undefined,
+      b_prob: pitch.bProb || undefined,
+      n_pred: pitch.nPred || undefined,
+      c_prob: pitch.cProb || undefined,
+    }));
   }
 
   async registerHomeowner(id: string, data: InsertHomeowner): Promise<Homeowner> {
@@ -243,12 +282,28 @@ export class SupabaseStorage implements IStorage {
 
   async getSalesman(id: string): Promise<Salesman | undefined> {
     const result = await db.select().from(salesmen).where(eq(salesmen.id, id)).limit(1);
-    return result[0] || undefined;
+    const salesman = result[0];
+    if (!salesman) return undefined;
+    
+    return {
+      ...salesman,
+      phone: salesman.phone || undefined,
+      businessType: salesman.businessType || undefined,
+      lastScanAt: salesman.lastScanAt || undefined,
+    };
   }
 
   async getSalesmanByEmail(email: string): Promise<Salesman | undefined> {
     const result = await db.select().from(salesmen).where(eq(salesmen.email, email)).limit(1);
-    return result[0] || undefined;
+    const salesman = result[0];
+    if (!salesman) return undefined;
+    
+    return {
+      ...salesman,
+      phone: salesman.phone || undefined,
+      businessType: salesman.businessType || undefined,
+      lastScanAt: salesman.lastScanAt || undefined,
+    };
   }
 
   async verifySalesman(id: string): Promise<void> {
@@ -291,14 +346,22 @@ export class SupabaseStorage implements IStorage {
     const result = await db.select().from(scanTracking)
       .where(eq(scanTracking.homeownerId, homeownerId))
       .orderBy(desc(scanTracking.scannedAt));
-    return result;
+    
+    return result.map(scan => ({
+      ...scan,
+      location: scan.location || undefined,
+    }));
   }
 
   async getScansBySalesman(salesmanId: string): Promise<ScanTracking[]> {
     const result = await db.select().from(scanTracking)
       .where(eq(scanTracking.salesmanId, salesmanId))
       .orderBy(desc(scanTracking.scannedAt));
-    return result;
+    
+    return result.map(scan => ({
+      ...scan,
+      location: scan.location || undefined,
+    }));
   }
 
   async getSalesmanStats(salesmanId: string): Promise<{ todayScans: number; weekScans: number; monthScans: number; }> {
