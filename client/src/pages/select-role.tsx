@@ -43,37 +43,44 @@ export default function SelectRole() {
         </div>
 
         <div className="space-y-6">
-          <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-blue-500 hover:scale-105 group bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/30">
-            <Link href="/create" onClick={() => handleRoleSelection('homeowner')}>
-              <CardHeader className="text-center pb-4 pt-8">
-                <div className="mx-auto w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mb-6 group-hover:from-blue-600 group-hover:to-blue-700 transition-all duration-300 shadow-lg">
-                  <Home className="w-10 h-10 text-white" />
+          <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-blue-500 hover:scale-105 group bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/30">
+            <CardHeader className="text-center pb-4 pt-8">
+              <div className="mx-auto w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mb-6 group-hover:from-blue-600 group-hover:to-blue-700 transition-all duration-300 shadow-lg">
+                <Home className="w-10 h-10 text-white" />
+              </div>
+              <CardTitle className="text-2xl text-gray-900 dark:text-white mb-3">I'm a Homeowner</CardTitle>
+              <CardDescription className="text-gray-600 dark:text-gray-300 text-base leading-relaxed">
+                Create your QR code to receive professional service offers without door-to-door interruptions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0 pb-8">
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                  Generate unique QR code instantly
                 </div>
-                <CardTitle className="text-2xl text-gray-900 dark:text-white mb-3">I'm a Homeowner</CardTitle>
-                <CardDescription className="text-gray-600 dark:text-gray-300 text-base leading-relaxed">
-                  Create your QR code to receive professional service offers without door-to-door interruptions.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0 pb-8">
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                    Generate unique QR code instantly
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                    Receive organized pitch emails
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                    Review offers on your own time
-                  </div>
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                  Receive organized pitch emails
                 </div>
-                <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-lg py-3 shadow-lg hover:shadow-xl transition-all duration-200">
-                  Create My QR Code
-                </Button>
-              </CardContent>
-            </Link>
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                  Review offers on your own time
+                </div>
+              </div>
+              <div className="space-y-3">
+                <Link href="/homeowner/signup" onClick={() => handleRoleSelection('homeowner')}>
+                  <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-lg py-3 shadow-lg hover:shadow-xl transition-all duration-200">
+                    Create New Account
+                  </Button>
+                </Link>
+                <Link href="/homeowner/login">
+                  <Button variant="outline" className="w-full border-blue-300 text-blue-700 hover:bg-blue-50 text-lg py-3">
+                    Sign In to Existing Account
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
           </Card>
 
           <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-orange-500 hover:scale-105 group bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/50 dark:to-orange-900/30">

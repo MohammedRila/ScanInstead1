@@ -5,6 +5,7 @@ export const homeownerSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
   email: z.string().email("Valid email is required"),
   phone: z.string().optional(),
+  password: z.string().min(8, "Password must be at least 8 characters"),
   isRegistered: z.boolean().default(false),
   notificationPreference: z.enum(["email", "phone", "both"]).default("email"),
   createdAt: z.date(),
@@ -79,7 +80,26 @@ export const insertHomeownerSchema = homeownerSchema.pick({
   fullName: true,
   email: true,
   phone: true,
+  password: true,
   notificationPreference: true,
+});
+
+// Auth schemas for homeowners
+export const homeownerSignupSchema = z.object({
+  fullName: z.string().min(1, "Full name is required"),
+  email: z.string().email("Valid email is required"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string(),
+  phone: z.string().optional(),
+  notificationPreference: z.enum(["email", "phone", "both"]).default("email"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+export const homeownerLoginSchema = z.object({
+  email: z.string().email("Valid email is required"),
+  password: z.string().min(1, "Password is required"),
 });
 
 // Authentication schemas
@@ -140,3 +160,5 @@ export type InsertScanTracking = z.infer<typeof insertScanTrackingSchema>;
 export type SalesmanSignup = z.infer<typeof salesmanSignupSchema>;
 export type SalesmanLogin = z.infer<typeof salesmanLoginSchema>;
 export type SalesmanProfile = z.infer<typeof salesmanProfileSchema>;
+export type HomeownerSignup = z.infer<typeof homeownerSignupSchema>;
+export type HomeownerLogin = z.infer<typeof homeownerLoginSchema>;

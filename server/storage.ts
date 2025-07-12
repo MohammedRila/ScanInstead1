@@ -18,6 +18,7 @@ export interface IStorage {
   getHomeowner(id: string): Promise<Homeowner | undefined>;
   getHomeownerByEmail(email: string): Promise<Homeowner | undefined>;
   registerHomeowner(id: string, data: InsertHomeowner): Promise<Homeowner>;
+  createHomeownerAuth(auth: { fullName: string; email: string; password: string; phone?: string; notificationPreference?: "email" | "phone" | "both" }): Promise<Homeowner>;
   createPitch(pitch: InsertPitch & { fileUrl?: string }): Promise<Pitch>;
   getPitchesByHomeowner(homeownerId: string): Promise<Pitch[]>;
   createSalesman(salesman: InsertSalesman): Promise<Salesman>;
@@ -283,6 +284,51 @@ export class SupabaseStorage implements IStorage {
     });
 
     return salesman;
+  }
+
+  async createHomeownerAuth(auth: { fullName: string; email: string; password: string; phone?: string; notificationPreference?: "email" | "phone" | "both" }): Promise<Homeowner> {
+    const bcrypt = await import('bcryptjs');
+    const hashedPassword = await bcrypt.hash(auth.password, 10);
+    const id = uuidv4();
+    
+    // Generate QR code URLs (same logic as createHomeowner)
+    let baseUrl = '';
+    let protocol = 'https';
+    
+    const replitDomain = process.env.REPLIT_DOMAINS?.split(',')[0];
+    if (replitDomain) {
+      baseUrl = replitDomain;
+      protocol = 'https';
+    } else {
+      const replSlug = process.env.REPL_SLUG;
+      const replOwner = process.env.REPL_OWNER;
+      if (replSlug && replOwner) {
+        baseUrl = `${replSlug}--${replOwner}.replit.app`;
+        protocol = 'https';
+      } else {
+        baseUrl = process.env.BASE_URL || 'localhost:5000';
+        protocol = baseUrl.includes('localhost') ? 'http' : 'https';
+      }
+    }
+
+    const qrUrl = `${protocol}://${baseUrl}/v/${id}`;
+    const pitchUrl = `${protocol}://${baseUrl}/v/${id}`;
+
+    const homeowner: Homeowner = {
+      id,
+      fullName: auth.fullName,
+      email: auth.email,
+      phone: auth.phone,
+      password: hashedPassword,
+      isRegistered: true,
+      notificationPreference: auth.notificationPreference || "email",
+      createdAt: new Date(),
+      qrUrl,
+      pitchUrl,
+    };
+
+    await db.insert(homeowners).values(homeowner);
+    return homeowner;
   }
 
   async createSalesmanAuth(auth: { email: string; password: string }): Promise<Salesman> {

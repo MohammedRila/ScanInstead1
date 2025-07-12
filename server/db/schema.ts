@@ -6,6 +6,7 @@ export const homeowners = pgTable('homeowners', {
   fullName: text('full_name').notNull(),
   email: text('email').notNull().unique(),
   phone: text('phone'),
+  password: text('password').notNull(),
   isRegistered: boolean('is_registered').default(false).notNull(),
   notificationPreference: text('notification_preference', { enum: ['email', 'phone', 'both'] }).default('email').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
