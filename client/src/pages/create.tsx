@@ -694,14 +694,7 @@ export default function Create() {
         </Card>
       </div>
 
-      {/* Keyboard shortcuts helper */}
-      <div className="fixed bottom-4 right-4 z-50 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 text-xs border border-gray-200 dark:border-gray-700">
-        <div className="font-medium mb-2">Shortcuts</div>
-        <div className="space-y-1">
-          <div>Ctrl+S: Save form</div>
-          <div>Esc: Reset form</div>
-        </div>
-      </div>
+
       
       {/* Undo system */}
       {actions.length > 0 && (
