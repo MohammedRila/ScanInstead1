@@ -32,8 +32,64 @@ export default function SelectRole() {
 
         <div className="text-center">
           <div className="mx-auto w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
-            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+            <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 100 100">
+              {/* ScanInstead Logo - QR Code with House Icon */}
+              {/* QR Code Grid */}
+              <rect x="10" y="10" width="6" height="6" />
+              <rect x="18" y="10" width="6" height="6" />
+              <rect x="26" y="10" width="6" height="6" />
+              <rect x="42" y="10" width="6" height="6" />
+              <rect x="58" y="10" width="6" height="6" />
+              <rect x="74" y="10" width="6" height="6" />
+              <rect x="82" y="10" width="6" height="6" />
+              
+              <rect x="10" y="18" width="6" height="6" />
+              <rect x="34" y="18" width="6" height="6" />
+              <rect x="50" y="18" width="6" height="6" />
+              <rect x="82" y="18" width="6" height="6" />
+              
+              <rect x="10" y="26" width="6" height="6" />
+              <rect x="26" y="26" width="6" height="6" />
+              <rect x="42" y="26" width="6" height="6" />
+              <rect x="58" y="26" width="6" height="6" />
+              <rect x="82" y="26" width="6" height="6" />
+              
+              <rect x="18" y="34" width="6" height="6" />
+              <rect x="34" y="34" width="6" height="6" />
+              <rect x="66" y="34" width="6" height="6" />
+              <rect x="82" y="34" width="6" height="6" />
+              
+              {/* House Icon in Center */}
+              <path d="M35 45 L50 32 L65 45 L65 65 L55 65 L55 55 L45 55 L45 65 L35 65 Z" fill="white" opacity="0.9" />
+              <rect x="47" y="58" width="2" height="4" fill="currentColor" opacity="0.8" />
+              <rect x="51" y="58" width="2" height="4" fill="currentColor" opacity="0.8" />
+              
+              <rect x="10" y="50" width="6" height="6" />
+              <rect x="26" y="50" width="6" height="6" />
+              <rect x="74" y="50" width="6" height="6" />
+              
+              <rect x="18" y="58" width="6" height="6" />
+              <rect x="34" y="58" width="6" height="6" />
+              <rect x="74" y="58" width="6" height="6" />
+              <rect x="82" y="58" width="6" height="6" />
+              
+              <rect x="10" y="66" width="6" height="6" />
+              <rect x="26" y="66" width="6" height="6" />
+              <rect x="74" y="66" width="6" height="6" />
+              
+              <rect x="10" y="74" width="6" height="6" />
+              <rect x="34" y="74" width="6" height="6" />
+              <rect x="50" y="74" width="6" height="6" />
+              <rect x="66" y="74" width="6" height="6" />
+              <rect x="82" y="74" width="6" height="6" />
+              
+              <rect x="10" y="82" width="6" height="6" />
+              <rect x="18" y="82" width="6" height="6" />
+              <rect x="26" y="82" width="6" height="6" />
+              <rect x="42" y="82" width="6" height="6" />
+              <rect x="58" y="82" width="6" height="6" />
+              <rect x="74" y="82" width="6" height="6" />
+              <rect x="82" y="82" width="6" height="6" />
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome to ScanInstead</h1>
