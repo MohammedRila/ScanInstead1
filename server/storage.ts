@@ -61,9 +61,9 @@ export class SupabaseStorage implements IStorage {
           // Use BASE_URL only if it's not the malformed "w" value
           baseUrl = process.env.BASE_URL.replace(/^https?:\/\//, '');
         } else {
-          // Final fallback to localhost
-          baseUrl = 'localhost:5000';
-          protocol = 'http';
+          // Final fallback to replit.app
+          baseUrl = 'replit.app';
+          protocol = 'https';
         }
       }
     }

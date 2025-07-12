@@ -61,7 +61,7 @@ app.use(limiter);
 // CORS configuration
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.BASE_URL || 'https://localhost:5000']
+    ? [process.env.BASE_URL || process.env.REPLIT_DOMAINS?.split(',')[0] || 'https://replit.app']
     : true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
