@@ -147,8 +147,15 @@ export default function Pitch() {
     );
   }
 
-  // User type selection screen
-  if (!userType) {
+  // Skip user type selection for QR code access and go directly to service provider form
+  // Set default to service provider if not already set
+  if (!userType && id !== "demo") {
+    setUserType("service_provider");
+    form.setValue("userType", "service_provider");
+  }
+
+  // User type selection screen (only for demo mode)
+  if (!userType && id === "demo") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -202,16 +209,14 @@ export default function Pitch() {
             </Card>
           </div>
 
-          {id === "demo" && (
-            <div className="text-center">
-              <div className="inline-block px-6 py-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 rounded-2xl border border-blue-200 dark:border-blue-800">
-                <p className="text-blue-700 dark:text-blue-300 font-medium">
-                  <Info className="inline h-5 w-5 mr-2" />
-                  Interactive Demo Mode - Try both options to see the experience
-                </p>
-              </div>
+          <div className="text-center">
+            <div className="inline-block px-6 py-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 rounded-2xl border border-blue-200 dark:border-blue-800">
+              <p className="text-blue-700 dark:text-blue-300 font-medium">
+                <Info className="inline h-5 w-5 mr-2" />
+                Interactive Demo Mode - Try both options to see the experience
+              </p>
             </div>
-          )}
+          </div>
         </div>
       </div>
     );
@@ -276,15 +281,17 @@ export default function Pitch() {
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-md mx-auto">
             Share your professional offer with the homeowner digitally
           </p>
-          <div className="mt-6 flex justify-center">
-            <Button 
-              variant="outline" 
-              onClick={() => setUserType(null)}
-              className="border-2"
-            >
-              Back to Selection
-            </Button>
-          </div>
+          {id === "demo" && (
+            <div className="mt-6 flex justify-center">
+              <Button 
+                variant="outline" 
+                onClick={() => setUserType(null)}
+                className="border-2"
+              >
+                Back to Selection
+              </Button>
+            </div>
+          )}
         </div>
 
         <Card className="border-0 shadow-2xl bg-white dark:bg-gray-800 overflow-hidden">

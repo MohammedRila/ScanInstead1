@@ -68,7 +68,7 @@ export class SupabaseStorage implements IStorage {
       }
     }
     
-    const pitchUrl = `${protocol}://${baseUrl}/l/${id}`;
+    const pitchUrl = `${protocol}://${baseUrl}/v/${id}`;
     
     // Log the generated URL for debugging
     console.log(`Generated pitch URL: ${pitchUrl}`);
