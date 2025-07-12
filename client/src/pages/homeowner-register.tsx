@@ -8,7 +8,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { CheckCircle, Copy, Download, Printer, QrCode, LogIn, ArrowLeft, Mail, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useLocation } from "wouter";
@@ -161,6 +161,7 @@ export default function HomeownerRegister() {
     }
   };
 
+  // Show QR code result after successful creation
   if (result) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 py-16">
@@ -178,7 +179,6 @@ export default function HomeownerRegister() {
           </div>
 
           <div className="grid lg:grid-cols-2 gap-8">
-            {/* QR Code Display */}
             <Card className="border-0 shadow-2xl bg-white dark:bg-gray-800 overflow-hidden">
               <CardContent className="p-8 text-center">
                 <h3 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Your QR Code</h3>
@@ -202,7 +202,6 @@ export default function HomeownerRegister() {
               </CardContent>
             </Card>
 
-            {/* URL and Instructions */}
             <div className="space-y-6">
               <Card className="border-0 shadow-xl bg-white dark:bg-gray-800">
                 <CardContent className="p-6">
@@ -248,115 +247,8 @@ export default function HomeownerRegister() {
                   </div>
                 </CardContent>
               </Card>
-
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/50 dark:to-orange-950/50">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">📧 Email Setup</h3>
-                  <p className="text-gray-700 dark:text-gray-300 mb-3">
-                    Pitches will be sent to: <strong>{result.homeowner.email}</strong>
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Make sure to check your spam folder for the first few submissions
-                  </p>
-                </CardContent>
-              </Card>
             </div>
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Show sign-in form if existing user detected
-  if (showSignIn) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 py-16">
-        <div className="max-w-md mx-auto px-4">
-          <div className="mb-8">
-            <Button 
-              variant="ghost" 
-              className="mb-4"
-              onClick={() => {
-                setShowSignIn(false);
-                form.clearErrors();
-              }}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Registration
-            </Button>
-            
-            <div className="text-center">
-              <div className="mx-auto w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mb-6">
-                <LogIn className="w-8 h-8 text-white" />
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                Welcome Back!
-              </h1>
-              <p className="text-gray-600 dark:text-gray-300">
-                This email is already registered. Sign in to access your QR code.
-              </p>
-            </div>
-          </div>
-
-          <Card className="border-0 shadow-2xl bg-white dark:bg-gray-800">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl text-center">Sign In</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSignIn} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email Address</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="signin-email"
-                      type="email"
-                      placeholder="Enter your email"
-                      className="pl-10"
-                      {...signinForm.register("email")}
-                    />
-                  </div>
-                  {signinForm.formState.errors.email && (
-                    <p className="text-sm text-red-600 dark:text-red-400">
-                      {signinForm.formState.errors.email.message}
-                    </p>
-                  )}
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                  disabled={signinMutation.isPending}
-                >
-                  {signinMutation.isPending ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                      Signing in...
-                    </div>
-                  ) : (
-                    <>
-                      <LogIn className="h-4 w-4 mr-2" />
-                      Access My QR Code
-                    </>
-                  )}
-                </Button>
-
-                <div className="text-center text-sm text-gray-600 dark:text-gray-400">
-                  Need a new account?{" "}
-                  <button 
-                    type="button"
-                    onClick={() => {
-                      setShowSignIn(false);
-                      form.clearErrors();
-                    }}
-                    className="text-blue-600 hover:text-blue-700 font-medium"
-                  >
-                    Register here
-                  </button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
         </div>
       </div>
     );
@@ -387,63 +279,134 @@ export default function HomeownerRegister() {
         </div>
 
         <Card className="border-0 shadow-2xl bg-white dark:bg-gray-800 overflow-hidden">
-          <CardContent className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="space-y-3">
-                <Label htmlFor="fullName" className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Full Name <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="fullName"
-                  placeholder="Enter your full name"
-                  className="h-14 text-lg border-2 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500"
-                  {...form.register("fullName")}
-                />
-                {form.formState.errors.fullName && (
-                  <p className="text-sm text-red-500 font-medium">{form.formState.errors.fullName.message}</p>
-                )}
-              </div>
-              
-              <div className="space-y-3">
-                <Label htmlFor="email" className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Email Address <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  className="h-14 text-lg border-2 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500"
-                  {...form.register("email")}
-                />
-                {form.formState.errors.email && (
-                  <p className="text-sm text-red-500 font-medium">{form.formState.errors.email.message}</p>
-                )}
-                <div className="bg-blue-50 dark:bg-blue-950/50 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-                  <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
-                    📧 All pitch submissions will be sent to this email address
-                  </p>
-                </div>
-              </div>
-              
-              <Button 
-                type="submit" 
-                className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg transition-all duration-300 transform hover:scale-105" 
-                disabled={createMutation.isPending}
+          <CardHeader>
+            <div className="flex items-center justify-between mb-4">
+              <Button
+                variant={!showSignIn ? "default" : "outline"}
+                onClick={() => setShowSignIn(false)}
+                className="flex-1 mr-2"
               >
-                {createMutation.isPending ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    <span>Generating Your QR Code...</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-2">
-                    <QrCode className="h-5 w-5" />
-                    <span>Generate QR Code</span>
-                  </div>
-                )}
+                Create Account
               </Button>
-            </form>
+              <Button
+                variant={showSignIn ? "default" : "outline"}
+                onClick={() => setShowSignIn(true)}
+                className="flex-1 ml-2"
+              >
+                Sign In
+              </Button>
+            </div>
+            <CardTitle className="text-2xl">
+              {showSignIn ? "Welcome Back!" : "Get Started"}
+            </CardTitle>
+            <CardDescription>
+              {showSignIn 
+                ? "Sign in to access your existing QR code and dashboard"
+                : "Create your account to generate your personalized QR code"
+              }
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-8">
+            {showSignIn ? (
+              // Sign-in form
+              <form onSubmit={handleSignIn} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="signin-email">Email Address</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="signin-email"
+                      type="email"
+                      placeholder="Enter your email"
+                      className="pl-10"
+                      {...signinForm.register("email")}
+                    />
+                  </div>
+                  {signinForm.formState.errors.email && (
+                    <p className="text-sm text-red-600 dark:text-red-400">
+                      {signinForm.formState.errors.email.message}
+                    </p>
+                  )}
+                </div>
 
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                  disabled={signinMutation.isPending}
+                >
+                  {signinMutation.isPending ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                      Signing in...
+                    </div>
+                  ) : (
+                    <>
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Access My QR Code
+                    </>
+                  )}
+                </Button>
+              </form>
+            ) : (
+              // Registration form
+              <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="space-y-3">
+                  <Label htmlFor="fullName" className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Full Name <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="fullName"
+                    placeholder="Enter your full name"
+                    className="h-14 text-lg border-2 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500"
+                    {...form.register("fullName")}
+                  />
+                  {form.formState.errors.fullName && (
+                    <p className="text-sm text-red-500 font-medium">{form.formState.errors.fullName.message}</p>
+                  )}
+                </div>
+                
+                <div className="space-y-3">
+                  <Label htmlFor="email" className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Email Address <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    className="h-14 text-lg border-2 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500"
+                    {...form.register("email")}
+                  />
+                  {form.formState.errors.email && (
+                    <p className="text-sm text-red-500 font-medium">{form.formState.errors.email.message}</p>
+                  )}
+                  <div className="bg-blue-50 dark:bg-blue-950/50 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                    <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
+                      📧 All pitch submissions will be sent to this email address
+                    </p>
+                  </div>
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg transition-all duration-300 transform hover:scale-105" 
+                  disabled={createMutation.isPending}
+                >
+                  {createMutation.isPending ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>Generating Your QR Code...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-2">
+                      <QrCode className="h-5 w-5" />
+                      <span>Generate QR Code</span>
+                    </div>
+                  )}
+                </Button>
+              </form>
+            )}
+
+            {/* Benefits Section */}
             <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
               <div className="grid grid-cols-1 gap-3 text-center sm:grid-cols-3 sm:gap-4">
                 <div className="p-4">
