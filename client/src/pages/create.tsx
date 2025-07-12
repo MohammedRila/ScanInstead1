@@ -534,7 +534,7 @@ export default function Create() {
                       id="signin-email"
                       type="email"
                       placeholder="Enter your email"
-                      className="pl-10"
+                      className="pl-10 pr-4"
                       {...signinForm.register("email")}
                     />
                   </div>
@@ -574,7 +574,7 @@ export default function Create() {
                       id="email"
                       type="email"
                       placeholder="Enter your email address"
-                      className="pl-10"
+                      className="pl-10 pr-4"
                       {...form.register("email")}
                     />
                   </div>
@@ -593,7 +593,7 @@ export default function Create() {
                       id="password"
                       type="password"
                       placeholder="Enter your password (min 8 characters)"
-                      className="pl-10"
+                      className="pl-10 pr-4"
                       {...form.register("password")}
                     />
                   </div>
