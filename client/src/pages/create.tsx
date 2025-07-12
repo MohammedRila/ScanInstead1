@@ -521,26 +521,7 @@ export default function Create() {
               </div>
             )}
 
-            {/* Smart defaults for homeowner registration */}
-            {!showSignIn && (
-              <div className="mb-6">
-                <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-                  <h3 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">Quick Start Templates</h3>
-                  <p className="text-xs text-blue-700 dark:text-blue-300 mb-3">Choose a template to fill in your details quickly</p>
-                  <div className="flex flex-wrap gap-2">
-                    {homeownerDefaults.map((template) => (
-                      <button
-                        key={template.id}
-                        onClick={() => applyDefaults(template.data)}
-                        className="px-3 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
-                      >
-                        {template.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
+            
 
             {showSignIn ? (
               // Sign-in form
