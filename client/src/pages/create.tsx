@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { CheckCircle, Copy, Download, Printer, QrCode, LogIn, ArrowLeft, Mail, User, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useLocation } from "wouter";
+import { SEOHead, seoConfigs } from "@/components/seo-head";
 
 interface CreateResponse {
   success: boolean;
@@ -165,6 +166,7 @@ export default function Create() {
   if (result) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 py-16">
+        <SEOHead {...seoConfigs.create} />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-lg">
@@ -270,6 +272,7 @@ export default function Create() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 py-16">
+      <SEOHead {...seoConfigs.create} />
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <Link href="/">

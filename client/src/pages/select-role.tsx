@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Home, Wrench, ArrowLeft } from "lucide-react";
 import { useEffect } from "react";
+import { SEOHead, seoConfigs } from "@/components/seo-head";
 
 export default function SelectRole() {
   useEffect(() => {
@@ -17,6 +18,7 @@ export default function SelectRole() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+      <SEOHead {...seoConfigs.selectRole} />
       <div className="w-full max-w-md space-y-8">
         {/* Back button */}
         <div className="text-center">

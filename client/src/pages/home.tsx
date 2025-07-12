@@ -3,10 +3,12 @@ import { QrCode, UserPlus, Mail, ArrowRight, CheckCircle, Zap, Shield, Play } fr
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { SEOHead, seoConfigs } from "@/components/seo-head";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead {...seoConfigs.home} />
       {/* Announcement Banner */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4">
         <div className="max-w-7xl mx-auto text-center">
