@@ -40,11 +40,11 @@ export default function Features() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8 lg:mb-12">
-          <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 glass-effect backdrop-blur-sm border border-white/20 dark:border-gray-700/20 group">
+        <div className="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6 lg:mb-12">
+          <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <QrCode className="w-6 h-6 text-blue-600 group-hover:scale-110 transition-transform duration-300" />
+                <QrCode className="w-6 h-6 text-blue-600" />
                 Instant QR Generation
               </CardTitle>
             </CardHeader>
@@ -52,14 +52,14 @@ export default function Features() {
               <p className="text-gray-600 dark:text-gray-300 mb-3">
                 Get your personalized QR code instantly. High-quality, scannable codes that work with any smartphone camera.
               </p>
-              <Badge variant="secondary" className="bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300">Core Feature</Badge>
+              <Badge variant="secondary">Core Feature</Badge>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 glass-effect backdrop-blur-sm border border-white/20 dark:border-gray-700/20 group">
+          <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Brain className="w-6 h-6 text-purple-600 group-hover:scale-110 transition-transform duration-300" />
+                <Brain className="w-6 h-6 text-purple-600" />
                 AI-Powered Filtering
               </CardTitle>
             </CardHeader>
@@ -67,7 +67,7 @@ export default function Features() {
               <p className="text-gray-600 dark:text-gray-300 mb-3">
                 Advanced machine learning automatically detects and filters spam, ensuring you only receive legitimate business proposals.
               </p>
-              <Badge variant="secondary" className="bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300">AI Technology</Badge>
+              <Badge variant="secondary">AI Technology</Badge>
             </CardContent>
           </Card>
 
@@ -201,33 +201,27 @@ export default function Features() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/90 to-purple-600/90 backdrop-blur-sm"></div>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
-            <CardHeader className="relative z-10">
-              <CardTitle className="text-white text-2xl font-bold flex items-center gap-2">
-                <Brain className="w-7 h-7" />
-                AI-Powered Intelligence
-              </CardTitle>
+          <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+            <CardHeader>
+              <CardTitle className="text-white">AI-Powered Intelligence</CardTitle>
             </CardHeader>
-            <CardContent className="relative z-10">
+            <CardContent>
               <div className="grid md:grid-cols-3 gap-6">
-                <div className="group">
-                  <h4 className="font-semibold mb-2 text-lg group-hover:text-blue-200 transition-colors">Content Analysis</h4>
-                  <p className="text-blue-100 leading-relaxed">
+                <div>
+                  <h4 className="font-semibold mb-2">Content Analysis</h4>
+                  <p className="text-blue-100">
                     Our AI analyzes proposal sentiment, business legitimacy, and content quality to ensure homeowners receive only relevant, professional communications.
                   </p>
                 </div>
-                <div className="group">
-                  <h4 className="font-semibold mb-2 text-lg group-hover:text-purple-200 transition-colors">Smart Categorization</h4>
-                  <p className="text-blue-100 leading-relaxed">
+                <div>
+                  <h4 className="font-semibold mb-2">Smart Categorization</h4>
+                  <p className="text-blue-100">
                     Automatically categorizes services (roofing, landscaping, solar, etc.) and assesses urgency levels to help homeowners prioritize responses.
                   </p>
                 </div>
-                <div className="group">
-                  <h4 className="font-semibold mb-2 text-lg group-hover:text-cyan-200 transition-colors">Continuous Learning</h4>
-                  <p className="text-blue-100 leading-relaxed">
+                <div>
+                  <h4 className="font-semibold mb-2">Continuous Learning</h4>
+                  <p className="text-blue-100">
                     The system learns from user feedback to continuously improve spam detection and proposal quality assessment.
                   </p>
                 </div>
