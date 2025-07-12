@@ -104,7 +104,6 @@ export const insertPitchSchema = pitchSchema.pick({
   visitorEmail: true,
   visitorPhone: true,
   fileName: true,
-  audioFileName: true,
   userType: true,
 });
 
