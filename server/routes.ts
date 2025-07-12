@@ -617,6 +617,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: 'Email is already verified.',
           salesman,
           alreadyVerified: true,
+          needsProfile: !salesman.profileCompleted,
         });
       }
 
@@ -625,11 +626,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         success: true,
-        message: 'Email verified successfully! Your account is now active.',
+        message: 'Email verified successfully! Please complete your profile.',
         salesman: {
           ...salesman,
           isVerified: true,
         },
+        needsProfile: !salesman.profileCompleted,
       });
     } catch (error) {
       console.error('Error verifying salesman:', error);
@@ -667,6 +669,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: 'Email is already verified.',
           salesman,
           alreadyVerified: true,
+          needsProfile: !salesman.profileCompleted,
         });
       }
 
@@ -675,11 +678,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         success: true,
-        message: 'Email verified successfully! Your account is now active.',
+        message: 'Email verified successfully! Please complete your profile.',
         salesman: {
           ...salesman,
           isVerified: true,
         },
+        needsProfile: !salesman.profileCompleted,
       });
     } catch (error) {
       console.error('Error verifying salesman:', error);

@@ -246,13 +246,22 @@ export default function SalesmanRegister() {
     },
     onSuccess: (data) => {
       setNeedsVerification(false);
-      setIsRegistered(true);
       setSalesmanId(data.salesman.id);
       localStorage.setItem('salesmanId', data.salesman.id);
-      toast({
-        title: "Email Verified!",
-        description: "Your account is now active. You can start scanning QR codes.",
-      });
+      
+      if (data.needsProfile) {
+        setNeedsProfile(true);
+        toast({
+          title: "Email Verified!",
+          description: "Please complete your profile to continue.",
+        });
+      } else {
+        setIsRegistered(true);
+        toast({
+          title: "Email Verified!",
+          description: "Your account is now active. You can start scanning QR codes.",
+        });
+      }
     },
     onError: (error) => {
       toast({
