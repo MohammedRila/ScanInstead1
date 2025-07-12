@@ -68,12 +68,12 @@ const upload = multer({
       'video/mp4', 'video/avi', 'video/mov', 'video/wmv',
 
     ];
-    
+
     const allowedExtensions = /\.(jpeg|jpg|png|gif|webp|bmp|pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv|mp4|avi|mov|wmv)$/i;
-    
+
     const hasValidMimeType = allowedMimeTypes.includes(file.mimetype);
     const hasValidExtension = allowedExtensions.test(file.originalname);
-    
+
     if (hasValidMimeType && hasValidExtension) {
       return cb(null, true);
     } else {
@@ -93,17 +93,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req, res) => {
     try {
       const { email } = req.body;
-      
+
       // Check if homeowner exists
       const existingHomeowner = await storage.getHomeownerByEmail(email);
-      
+
       if (!existingHomeowner) {
         return res.status(404).json({
           success: false,
           message: 'No account found with this email address. Please create a new account.',
         });
       }
-      
+
       res.json({
         success: true,
         message: 'Welcome back! Redirecting to your dashboard.',
@@ -131,10 +131,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req, res) => {
     try {
       const validatedData = insertHomeownerSchema.parse(req.body);
-      
+
       // Check if user already exists
       const existingHomeowner = await storage.getHomeownerByEmail(validatedData.email);
-      
+
       if (existingHomeowner) {
         return res.status(409).json({
           success: false,
@@ -143,12 +143,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           homeowner: existingHomeowner,
         });
       }
-      
+
       const homeowner = await storage.createHomeowner(validatedData);
-      
+
       // Generate QR code
       const qrUrl = await generateQRCode(homeowner.pitchUrl);
-      
+
       // Send welcome email
       try {
         console.log('Attempting to send welcome email to:', homeowner.email);
@@ -158,7 +158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('Error sending welcome email:', emailError);
         // Don't fail the registration if email fails, but log it
       }
-      
+
       res.json({
         success: true,
         homeowner: {
@@ -206,10 +206,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req, res) => {
     try {
       const pitches = await storage.getPitchesByHomeowner(req.params.id);
-      
+
       // Skip heavy data intelligence analysis for dashboard loading
       // Intelligence analysis runs in background monitoring instead
-      
+
       res.json({
         success: true,
         pitches,
@@ -241,7 +241,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const homeownerId = req.params.id;
       const homeowner = await storage.getHomeowner(homeownerId);
-      
+
       if (!homeowner) {
         return res.status(404).json({
           success: false,
@@ -273,14 +273,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const validatedData = insertPitchSchema.parse(pitchData);
-      
+
       // Perform basic analysis without external AI models for faster processing
       let aiAnalysis;
       let hiddenAnalysis;
       try {
         const pitchContent = `${validatedData.offer} ${validatedData.reason}`;
         const businessName = validatedData.businessName || 'Unknown Business';
-        
+
         // Create basic analysis without external API calls
         aiAnalysis = {
           sentiment: 'positive',
@@ -294,28 +294,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isSpam: false,
           aiProcessed: true
         };
-        
+
         // Create basic hidden analysis
         hiddenAnalysis = {
           match_lvl: 0.8,
-          s_flag: 0.0,
+          s_flag: false,
           i_tag: 'service_request',
           u_score: 0.6,
           k_meta: 'business_pitch',
-          xtext: pitchContent.length.toString(),
+          xtext: pitchContent.length,
           rscore: 0.75,
           clickT: 0,
           b_prob: 0.1,
           n_pred: 'respond',
           c_prob: 0.7
         };
-        
+
         console.log('Basic analysis completed');
       } catch (aiError) {
         console.error('Analysis failed:', aiError);
         // Continue without analysis if it fails
       }
-      
+
       // Build pitch object with all data including hidden analysis
       const pitchWithData = {
         ...validatedData,
@@ -334,7 +334,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('Error sending email:', emailError);
         // Don't fail the request if email fails
       }
-      
+
       // Send SMS notification if enabled
       try {
         await sendPitchSMS(homeowner, pitch);
@@ -362,9 +362,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const homeownerId = req.params.id;
       const validatedData = insertHomeownerSchema.parse(req.body);
-      
+
       const homeowner = await storage.registerHomeowner(homeownerId, validatedData);
-      
+
       // Send welcome email for completed registration
       try {
         console.log('Attempting to send registration confirmation email to:', homeowner.email);
@@ -374,7 +374,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('Error sending registration confirmation email:', emailError);
         // Don't fail the registration if email fails, but log it
       }
-      
+
       res.json({
         success: true,
         message: 'Homeowner registered successfully! Check your email for confirmation.',
@@ -404,10 +404,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req, res) => {
     try {
       const validatedData = insertSalesmanSchema.parse(req.body);
-      
+
       // Check if user already exists
       const existingSalesman = await storage.getSalesmanByEmail(validatedData.email);
-      
+
       if (existingSalesman) {
         return res.status(409).json({
           success: false,
@@ -416,9 +416,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           salesman: existingSalesman,
         });
       }
-      
+
       const salesman = await storage.createSalesman(validatedData);
-      
+
       // Send verification email
       try {
         console.log('Attempting to send verification email to:', salesman.email);
@@ -428,7 +428,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('Error sending verification email:', emailError);
         // Don't fail the registration if email fails, but log it
       }
-      
+
       res.json({
         success: true,
         message: 'Service provider registered successfully! Please check your email for verification.',
@@ -452,24 +452,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req, res) => {
     try {
       const { email } = req.query;
-      
+
       if (!email || typeof email !== 'string') {
         return res.status(400).json({
           success: false,
           message: 'Email parameter is required.',
         });
       }
-      
+
       // Find salesman by email
       const salesman = await storage.getSalesmanByEmail(email);
-      
+
       if (!salesman) {
         return res.status(404).json({
           success: false,
           message: 'No account found with this email address.',
         });
       }
-      
+
       if (salesman.isVerified) {
         return res.json({
           success: true,
@@ -478,10 +478,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           alreadyVerified: true,
         });
       }
-      
+
       // Verify the salesman
       await storage.verifySalesman(salesman.id);
-      
+
       res.json({
         success: true,
         message: 'Email verified successfully! Your account is now active.',
@@ -495,48 +495,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         success: false,
         message: 'Failed to verify email',
-      });
-    }
-  });
-
-  // Salesman sign-in route
-  app.post("/api/salesman/signin", 
-    [
-      body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
-      sanitizeInput,
-      validateRequest
-    ],
-    async (req, res) => {
-    try {
-      const { email } = req.body;
-      
-      // Find salesman by email
-      const salesman = await storage.getSalesmanByEmail(email);
-      
-      if (!salesman) {
-        return res.status(404).json({
-          success: false,
-          message: 'No account found with this email address.',
-        });
-      }
-      
-      if (!salesman.isVerified) {
-        return res.status(403).json({
-          success: false,
-          message: 'Please verify your email address before signing in.',
-        });
-      }
-      
-      res.json({
-        success: true,
-        message: 'Sign in successful!',
-        salesman,
-      });
-    } catch (error) {
-      console.error('Error signing in salesman:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to sign in',
       });
     }
   });
@@ -551,17 +509,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req, res) => {
     try {
       const { email } = req.body;
-      
+
       // Find salesman by email
       const salesman = await storage.getSalesmanByEmail(email);
-      
+
       if (!salesman) {
         return res.status(404).json({
           success: false,
           message: 'No account found with this email address.',
         });
       }
-      
+
       if (salesman.isVerified) {
         return res.json({
           success: true,
@@ -570,10 +528,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           alreadyVerified: true,
         });
       }
-      
+
       // Verify the salesman
       await storage.verifySalesman(salesman.id);
-      
+
       res.json({
         success: true,
         message: 'Email verified successfully! Your account is now active.',
@@ -601,17 +559,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req, res) => {
     try {
       const { email } = req.body;
-      
+
       // Find salesman by email
       const salesman = await storage.getSalesmanByEmail(email);
-      
+
       if (!salesman) {
         return res.status(404).json({
           success: false,
           message: 'No account found with this email address. Please register first.',
         });
       }
-      
+
       if (!salesman.isVerified) {
         return res.status(403).json({
           success: false,
@@ -620,7 +578,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           salesman,
         });
       }
-      
+
       res.json({
         success: true,
         message: 'Welcome back! Redirecting to your dashboard.',
@@ -642,14 +600,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const salesmanId = req.params.id;
       const salesman = await storage.getSalesman(salesmanId);
-      
+
       if (!salesman) {
         return res.status(404).json({
           success: false,
           message: 'Salesman not found',
         });
       }
-      
+
       res.json({
         success: true,
         salesman,
@@ -670,7 +628,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const salesmanId = req.params.id;
       const scans = await storage.getScansBySalesman(salesmanId);
-      
+
       res.json({
         success: true,
         scans,
@@ -691,7 +649,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const salesmanId = req.params.id;
       const stats = await storage.getSalesmanStats(salesmanId);
-      
+
       res.json({
         success: true,
         stats,
@@ -718,16 +676,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const homeownerId = req.params.homeownerId;
       const { salesmanId, location } = req.body;
-      
+
       const scanData = {
         homeownerId,
         salesmanId,
         location,
       };
-      
+
       const validatedData = insertScanTrackingSchema.parse(scanData);
       const scan = await storage.createScanTracking(validatedData);
-      
+
       res.json({
         success: true,
         message: 'Scan tracked successfully',
@@ -769,11 +727,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { filename } = req.params;
       const fileData = await serveFile(filename);
-      
+
       if (!fileData) {
         return res.status(404).json({ error: 'File not found' });
       }
-      
+
       res.setHeader('Content-Type', fileData.mimetype);
       res.send(fileData.buffer);
     } catch (error) {
@@ -800,11 +758,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const start = parseInt(parts[0], 10);
         const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
         const chunksize = (end - start) + 1;
-        
+
         res.status(206);
         res.setHeader('Content-Range', `bytes ${start}-${end}/${fileSize}`);
         res.setHeader('Content-Length', chunksize);
-        
+
         // Stream the video chunk
         const fileBuffer = await fs.readFile(videoPath);
         res.end(fileBuffer.slice(start, end + 1));
