@@ -22,6 +22,8 @@ export function KeyboardShortcuts({ shortcuts, disabled = false }: KeyboardShort
     if (disabled) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (!event.key) return;
+      
       const matchedShortcut = shortcuts.find(shortcut => 
         shortcut.key.toLowerCase() === event.key.toLowerCase() &&
         !!shortcut.ctrlKey === event.ctrlKey &&

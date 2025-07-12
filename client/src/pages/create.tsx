@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -43,14 +43,21 @@ export default function Create() {
   const [showSignIn, setShowSignIn] = useState(false);
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const { homeownerDefaults } = useSmartDefaults();
-  const { saveDraft, getDraft, clearDraft } = useAutoSave();
-  const { commonShortcuts } = useKeyboardShortcuts();
-  const { steps, addStep, updateStep, completeStep } = useProgressSteps();
-  const { actions, addAction, removeAction } = useUndoSystem();
-  const { showWelcome, dismissWelcome, updateUser } = useWelcomeMessage();
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Simplified UX state
+  const [steps, setSteps] = useState<any[]>([]);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [actions, setActions] = useState<any[]>([]);
+  const homeownerDefaults = [
+    {
+      id: 'standard-homeowner',
+      name: 'Standard Homeowner',
+      description: 'Basic homeowner profile',
+      data: { fullName: '', email: '' }
+    }
+  ];
 
   const form = useForm<InsertHomeowner>({
     resolver: zodResolver(insertHomeownerSchema),
@@ -62,65 +69,75 @@ export default function Create() {
 
   // Load draft data on mount
   useEffect(() => {
-    const draft = getDraft('homeowner-create');
-    if (draft?.data) {
-      form.reset(draft.data);
+    const draft = localStorage.getItem('homeowner-create-draft');
+    if (draft) {
+      try {
+        const parsedDraft = JSON.parse(draft);
+        form.reset(parsedDraft);
+      } catch (e) {
+        console.error('Error parsing draft:', e);
+      }
     }
 
     // Set up progress steps
-    addStep({
-      id: 'validation',
-      label: 'Validate Information',
-      description: 'Checking your details'
-    });
-    addStep({
-      id: 'generation',
-      label: 'Generate QR Code',
-      description: 'Creating your unique QR code'
-    });
-    addStep({
-      id: 'notification',
-      label: 'Send Welcome Email',
-      description: 'Sending setup instructions'
-    });
+    setSteps([
+      { id: 'validation', label: 'Validate Information', description: 'Checking your details', status: 'pending' },
+      { id: 'generation', label: 'Generate QR Code', description: 'Creating your unique QR code', status: 'pending' },
+      { id: 'notification', label: 'Send Welcome Email', description: 'Sending setup instructions', status: 'pending' }
+    ]);
+
+    // Add keyboard event listener
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        if (form.formState.isValid) {
+          form.handleSubmit(onSubmit)();
+        }
+      } else if (e.key === 'Escape') {
+        form.reset();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeydown);
+    return () => document.removeEventListener('keydown', handleKeydown);
   }, []);
 
   // Auto-save form data
   const formData = form.watch();
   useEffect(() => {
     if (formData.fullName || formData.email) {
-      saveDraft('homeowner-create', formData);
+      localStorage.setItem('homeowner-create-draft', JSON.stringify(formData));
     }
-  }, [formData, saveDraft]);
+  }, [formData.fullName, formData.email]);
 
   // Auto-save function for AutoSave component
-  const handleAutoSave = async (data: any) => {
+  const handleAutoSave = useCallback(async (data: any) => {
     setIsSaving(true);
     try {
-      saveDraft('homeowner-create', data);
+      localStorage.setItem('homeowner-create-draft', JSON.stringify(data));
       setLastSaved(new Date());
       await new Promise(resolve => setTimeout(resolve, 500)); // Simulate save
     } finally {
       setIsSaving(false);
     }
-  };
+  }, []);
 
   // Apply smart defaults
-  const applyDefaults = (defaultData: Record<string, any>) => {
+  const applyDefaults = useCallback((defaultData: Record<string, any>) => {
     form.reset({
       ...form.getValues(),
       ...defaultData,
     });
     
-    addAction({
+    setActions(prev => [...prev, {
       type: 'edit',
       description: 'Applied template defaults',
       data: form.getValues(),
       undoFunction: async () => {
         form.reset({ fullName: "", email: "" });
       }
-    });
-  };
+    }]);
+  }, [form]);
 
   // Copy functions
   const copyToClipboard = (text: string, label: string) => {
@@ -138,14 +155,23 @@ export default function Create() {
 
   // Keyboard shortcuts
   const shortcuts = [
-    commonShortcuts.save(() => {
-      if (form.formState.isValid) {
-        form.handleSubmit(onSubmit)();
+    {
+      key: 's',
+      ctrlKey: true,
+      description: 'Save form',
+      action: () => {
+        if (form.formState.isValid) {
+          form.handleSubmit(onSubmit)();
+        }
       }
-    }),
-    commonShortcuts.escape(() => {
-      form.reset();
-    }),
+    },
+    {
+      key: 'Escape',
+      description: 'Reset form',
+      action: () => {
+        form.reset();
+      }
+    }
   ];
 
   const createMutation = useMutation({
@@ -160,28 +186,32 @@ export default function Create() {
         throw new Error("EXISTING_USER");
       }
       
-      completeStep('validation');
-      updateStep('generation', { status: 'in-progress' });
+      setSteps(prev => prev.map(step => 
+        step.id === 'validation' ? { ...step, status: 'completed' } : step
+      ));
+      setSteps(prev => prev.map(step => 
+        step.id === 'generation' ? { ...step, status: 'in-progress' } : step
+      ));
       
       // Simulate QR generation time
       await new Promise(resolve => setTimeout(resolve, 1000));
-      completeStep('generation');
+      setSteps(prev => prev.map(step => 
+        step.id === 'generation' ? { ...step, status: 'completed' } : step
+      ));
       
-      updateStep('notification', { status: 'in-progress' });
+      setSteps(prev => prev.map(step => 
+        step.id === 'notification' ? { ...step, status: 'in-progress' } : step
+      ));
       await new Promise(resolve => setTimeout(resolve, 800));
-      completeStep('notification');
+      setSteps(prev => prev.map(step => 
+        step.id === 'notification' ? { ...step, status: 'completed' } : step
+      ));
       
       return result as CreateResponse;
     },
     onSuccess: (data) => {
       setResult(data);
-      clearDraft('homeowner-create'); // Clear draft after successful creation
-      updateUser({
-        fullName: data.homeowner.fullName,
-        email: data.homeowner.email,
-        isReturning: false,
-        totalPitches: 0,
-      });
+      localStorage.removeItem('homeowner-create-draft'); // Clear draft after successful creation
       
       toast({
         title: "Success!",
@@ -448,36 +478,64 @@ export default function Create() {
           <CardContent>
             {/* Status indicators and auto-save */}
             <div className="flex items-center justify-between mb-6">
-              <StatusIndicators showConnectionStatus showSyncStatus />
-              <AutoSave
-                data={formData}
-                onSave={handleAutoSave}
-                enabled={!showSignIn}
-                showStatus={true}
-              />
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Online</span>
+              </div>
+              {lastSaved && (
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Saved {lastSaved.toLocaleTimeString()}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Progress steps during creation */}
             {createMutation.isPending && (
               <div className="mb-6">
-                <ProgressAnimation 
-                  steps={steps}
-                  showProgress={true}
-                  showStepDetails={true}
-                  compact={false}
-                />
+                <div className="space-y-2">
+                  {steps.map((step, index) => (
+                    <div key={step.id} className="flex items-center space-x-2">
+                      <div className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                        step.status === 'completed' ? 'bg-green-500' : 
+                        step.status === 'in-progress' ? 'bg-blue-500' : 'bg-gray-300'
+                      }`}>
+                        {step.status === 'completed' && (
+                          <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">{step.label}</div>
+                        <div className="text-xs text-gray-500">{step.description}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
             {/* Smart defaults for homeowner registration */}
             {!showSignIn && (
               <div className="mb-6">
-                <SmartDefaults
-                  defaults={homeownerDefaults}
-                  onApply={applyDefaults}
-                  title="Quick Start Templates"
-                  subtitle="Choose a template to fill in your details quickly"
-                />
+                <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                  <h3 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">Quick Start Templates</h3>
+                  <p className="text-xs text-blue-700 dark:text-blue-300 mb-3">Choose a template to fill in your details quickly</p>
+                  <div className="flex flex-wrap gap-2">
+                    {homeownerDefaults.map((template) => (
+                      <button
+                        key={template.id}
+                        onClick={() => applyDefaults(template.data)}
+                        className="px-3 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                      >
+                        {template.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -636,19 +694,51 @@ export default function Create() {
         </Card>
       </div>
 
-      {/* Keyboard shortcuts */}
-      <KeyboardShortcuts shortcuts={shortcuts} />
+      {/* Keyboard shortcuts helper */}
+      <div className="fixed bottom-4 right-4 z-50 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 text-xs border border-gray-200 dark:border-gray-700">
+        <div className="font-medium mb-2">Shortcuts</div>
+        <div className="space-y-1">
+          <div>Ctrl+S: Save form</div>
+          <div>Esc: Reset form</div>
+        </div>
+      </div>
       
       {/* Undo system */}
-      <UndoSystem actions={actions} onUndo={removeAction} />
+      {actions.length > 0 && (
+        <div className="fixed bottom-4 left-4 z-50 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 text-xs border border-gray-200 dark:border-gray-700">
+          <div className="font-medium mb-2">Recent Actions</div>
+          <div className="space-y-1">
+            {actions.slice(-3).map((action, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <span>{action.description}</span>
+                <button
+                  onClick={() => action.undoFunction()}
+                  className="text-blue-600 hover:text-blue-800 ml-2"
+                >
+                  Undo
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       
       {/* Welcome message */}
       {showWelcome && (
-        <WelcomeMessage
-          type="homeowner"
-          onDismiss={dismissWelcome}
-          showStats={false}
-        />
+        <div className="fixed top-4 right-4 z-50 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 border border-gray-200 dark:border-gray-700 max-w-sm">
+          <div className="flex items-center justify-between mb-2">
+            <div className="font-medium">Welcome!</div>
+            <button
+              onClick={() => setShowWelcome(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ×
+            </button>
+          </div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            Create your QR code to start receiving digital pitches from service providers.
+          </div>
+        </div>
       )}
     </div>
   );
