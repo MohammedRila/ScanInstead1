@@ -281,10 +281,10 @@ export default function Create() {
           
           <div className="text-center">
             <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-6 shadow-lg">
-              <Home className="h-8 w-8 text-white" />
+              <QrCode className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-              Create Your QR Code
+              Welcome to ScanInstead
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-md mx-auto">
               Generate your digital pitch system in under 60 seconds
