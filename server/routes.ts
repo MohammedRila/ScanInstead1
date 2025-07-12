@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertHomeownerSchema, insertPitchSchema, insertSalesmanSchema, insertScanTrackingSchema } from "@shared/schema";
 import { generateQRCode } from "./services/qr";
-import { sendPitchEmail, sendSalesmanVerificationEmail, sendHomeownerWelcomeEmail } from "./services/email";
+import { sendPitchEmail, sendSalesmanVerificationEmail, sendSalesmanWelcomeEmail, sendHomeownerWelcomeEmail } from "./services/email";
 import { sendPitchSMS } from "./services/sms";
 import { uploadToSupabase, serveFile } from "./services/supabase-storage";
 import { analyzePitch, performHiddenAnalysis, performDataIntelligenceAnalysis } from "./services/ai";
@@ -420,26 +420,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         password: hashedPassword,
       });
 
-      // Send verification email
+      // Send welcome email
       try {
-        console.log('Attempting to send verification email to:', salesman.email);
-        await sendSalesmanVerificationEmail(salesman);
-        console.log('Verification email sent successfully!');
+        console.log('Attempting to send welcome email to:', salesman.email);
+        await sendSalesmanWelcomeEmail(salesman);
+        console.log('Welcome email sent successfully!');
       } catch (emailError) {
-        console.error('Error sending verification email:', emailError);
+        console.error('Error sending welcome email:', emailError);
         // Don't fail the registration if email fails, but log it
       }
 
       res.json({
         success: true,
-        message: 'Account created successfully! Please check your email for verification.',
+        message: 'Account created successfully! Please check your email for next steps.',
         salesman: {
           id: salesman.id,
           email: salesman.email,
           isVerified: salesman.isVerified,
           profileCompleted: salesman.profileCompleted,
         },
-        needsVerification: true,
+        needsVerification: !salesman.isVerified,
       });
     } catch (error) {
       console.error('Error creating account:', error);

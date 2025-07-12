@@ -135,6 +135,87 @@ export async function sendHomeownerWelcomeEmail(homeowner: any): Promise<void> {
   }
 }
 
+export async function sendSalesmanWelcomeEmail(salesman: any): Promise<void> {
+  // Validate and sanitize salesman data
+  if (!salesman.email || !validateEmail(salesman.email)) {
+    throw new Error('Invalid email address');
+  }
+  
+  const sanitizedSalesman = sanitizeUserData(salesman);
+  const emailHtml = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background-color: #EA580C; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="margin: 0;">Welcome to ScanInstead!</h1>
+        <p style="margin: 10px 0 0 0; opacity: 0.9;">Your service provider account has been created</p>
+      </div>
+      
+      <div style="background-color: #f9fafb; padding: 20px; border-radius: 0 0 8px 8px;">
+        <h2 style="color: #1f2937; margin-top: 0;">Account Created Successfully!</h2>
+        
+        <div style="background-color: white; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+          <h3 style="margin: 0 0 15px 0; color: #374151;">Account Details</h3>
+          <p><strong>Email:</strong> ${sanitizedSalesman.email}</p>
+          <p><strong>Account Type:</strong> Service Provider</p>
+          <p><strong>Status:</strong> ${sanitizedSalesman.isVerified ? 'Verified' : 'Pending Verification'}</p>
+        </div>
+        
+        <div style="background-color: #fef3c7; padding: 20px; border-radius: 6px; border-left: 4px solid #f59e0b; margin-bottom: 20px;">
+          <h3 style="margin: 0 0 10px 0; color: #92400e;">🎉 Next Steps</h3>
+          <p style="margin: 0; color: #92400e;">
+            ${sanitizedSalesman.isVerified ? 
+              'Complete your profile to start scanning QR codes in your neighborhood.' : 
+              'Please verify your email address first, then complete your profile to get started.'
+            }
+          </p>
+        </div>
+        
+        <div style="background-color: white; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+          <h3 style="margin: 0 0 15px 0; color: #374151;">What's Next?</h3>
+          <ul style="color: #6b7280; line-height: 1.6;">
+            <li>Complete your business profile with your legal name and business details</li>
+            <li>Look for ScanInstead QR codes on doors in your service area</li>
+            <li>Scan codes to submit professional digital pitches</li>
+            <li>Track your scans and engagement in your dashboard</li>
+            <li>Build trust with homeowners through our verified platform</li>
+          </ul>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="https://${process.env.REPLIT_DOMAINS?.split(',')[0] || process.env.BASE_URL?.replace(/^https?:\/\//, '') || 'replit.app'}/salesman/register" 
+             style="background-color: #EA580C; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px; margin-bottom: 15px;">
+            ${sanitizedSalesman.isVerified ? 'Complete Your Profile' : 'Verify Email & Complete Profile'}
+          </a>
+        </div>
+        
+        <div style="background-color: #e0f2fe; padding: 15px; border-radius: 6px; border-left: 4px solid #0288d1; margin-bottom: 20px;">
+          <p style="margin: 0; color: #01579b; font-size: 14px;"><strong>Security Notice:</strong> Keep your login credentials secure. Never share your password with anyone.</p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+          <p style="color: #6b7280; font-size: 14px;">
+            Account created on ${sanitizedSalesman.createdAt.toLocaleDateString()} at ${sanitizedSalesman.createdAt.toLocaleTimeString()}
+          </p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  try {
+    const result = await transporter.sendMail({
+      from: `"ScanInstead" <${process.env.GMAIL_USER}>`,
+      to: sanitizedSalesman.email,
+      subject: `Welcome to ScanInstead - Account Created Successfully!`,
+      html: sanitizeEmailContent(emailHtml),
+    });
+    
+    console.log('Welcome email sent successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('Detailed welcome email error:', error);
+    throw error;
+  }
+}
+
 export async function sendSalesmanVerificationEmail(salesman: any): Promise<void> {
   // Validate and sanitize salesman data
   if (!salesman.email || !validateEmail(salesman.email)) {
