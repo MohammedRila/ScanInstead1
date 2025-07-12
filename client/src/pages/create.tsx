@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -13,6 +13,13 @@ import { CheckCircle, Copy, Download, Printer, QrCode, LogIn, ArrowLeft, Mail, U
 import { useToast } from "@/hooks/use-toast";
 import { Link, useLocation } from "wouter";
 import { SEOHead, seoConfigs } from "@/components/seo-head";
+import { SmartDefaults, useSmartDefaults } from "@/components/smart-defaults";
+import { AutoSave, useAutoSave } from "@/components/auto-save";
+import { KeyboardShortcuts, useKeyboardShortcuts } from "@/components/keyboard-shortcuts";
+import { StatusIndicators } from "@/components/status-indicators";
+import { ProgressAnimation, useProgressSteps } from "@/components/progress-animations";
+import { WelcomeMessage, useWelcomeMessage } from "@/components/welcome-messages";
+import { UndoSystem, useUndoSystem } from "@/components/undo-system";
 
 interface CreateResponse {
   success: boolean;
@@ -36,6 +43,14 @@ export default function Create() {
   const [showSignIn, setShowSignIn] = useState(false);
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { homeownerDefaults } = useSmartDefaults();
+  const { saveDraft, getDraft, clearDraft } = useAutoSave();
+  const { commonShortcuts } = useKeyboardShortcuts();
+  const { steps, addStep, updateStep, completeStep } = useProgressSteps();
+  const { actions, addAction, removeAction } = useUndoSystem();
+  const { showWelcome, dismissWelcome, updateUser } = useWelcomeMessage();
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<InsertHomeowner>({
     resolver: zodResolver(insertHomeownerSchema),
@@ -45,8 +60,98 @@ export default function Create() {
     },
   });
 
+  // Load draft data on mount
+  useEffect(() => {
+    const draft = getDraft('homeowner-create');
+    if (draft?.data) {
+      form.reset(draft.data);
+    }
+
+    // Set up progress steps
+    addStep({
+      id: 'validation',
+      label: 'Validate Information',
+      description: 'Checking your details'
+    });
+    addStep({
+      id: 'generation',
+      label: 'Generate QR Code',
+      description: 'Creating your unique QR code'
+    });
+    addStep({
+      id: 'notification',
+      label: 'Send Welcome Email',
+      description: 'Sending setup instructions'
+    });
+  }, []);
+
+  // Auto-save form data
+  const formData = form.watch();
+  useEffect(() => {
+    if (formData.fullName || formData.email) {
+      saveDraft('homeowner-create', formData);
+    }
+  }, [formData, saveDraft]);
+
+  // Auto-save function for AutoSave component
+  const handleAutoSave = async (data: any) => {
+    setIsSaving(true);
+    try {
+      saveDraft('homeowner-create', data);
+      setLastSaved(new Date());
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate save
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Apply smart defaults
+  const applyDefaults = (defaultData: Record<string, any>) => {
+    form.reset({
+      ...form.getValues(),
+      ...defaultData,
+    });
+    
+    addAction({
+      type: 'edit',
+      description: 'Applied template defaults',
+      data: form.getValues(),
+      undoFunction: async () => {
+        form.reset({ fullName: "", email: "" });
+      }
+    });
+  };
+
+  // Copy functions
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Copied!",
+      description: `${label} copied to clipboard`,
+    });
+  };
+
+  // Form submission handlers
+  const onSubmit = (data: InsertHomeowner) => {
+    createMutation.mutate(data);
+  };
+
+  // Keyboard shortcuts
+  const shortcuts = [
+    commonShortcuts.save(() => {
+      if (form.formState.isValid) {
+        form.handleSubmit(onSubmit)();
+      }
+    }),
+    commonShortcuts.escape(() => {
+      form.reset();
+    }),
+  ];
+
   const createMutation = useMutation({
     mutationFn: async (data: InsertHomeowner) => {
+      updateStep('validation', { status: 'in-progress' });
+      
       const response = await apiRequest("POST", "/api/create", data);
       const result = await response.json();
       
@@ -55,10 +160,29 @@ export default function Create() {
         throw new Error("EXISTING_USER");
       }
       
+      completeStep('validation');
+      updateStep('generation', { status: 'in-progress' });
+      
+      // Simulate QR generation time
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      completeStep('generation');
+      
+      updateStep('notification', { status: 'in-progress' });
+      await new Promise(resolve => setTimeout(resolve, 800));
+      completeStep('notification');
+      
       return result as CreateResponse;
     },
     onSuccess: (data) => {
       setResult(data);
+      clearDraft('homeowner-create'); // Clear draft after successful creation
+      updateUser({
+        fullName: data.homeowner.fullName,
+        email: data.homeowner.email,
+        isReturning: false,
+        totalPitches: 0,
+      });
+      
       toast({
         title: "Success!",
         description: "Your QR code has been generated.",
@@ -114,9 +238,7 @@ export default function Create() {
     },
   });
 
-  const handleSubmit = form.handleSubmit((data) => {
-    createMutation.mutate(data);
-  });
+  const handleSubmit = form.handleSubmit(onSubmit);
 
   const handleSignIn = signinForm.handleSubmit((data) => {
     signinMutation.mutate(data);
@@ -324,6 +446,41 @@ export default function Create() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Status indicators and auto-save */}
+            <div className="flex items-center justify-between mb-6">
+              <StatusIndicators showConnectionStatus showSyncStatus />
+              <AutoSave
+                data={formData}
+                onSave={handleAutoSave}
+                enabled={!showSignIn}
+                showStatus={true}
+              />
+            </div>
+
+            {/* Progress steps during creation */}
+            {createMutation.isPending && (
+              <div className="mb-6">
+                <ProgressAnimation 
+                  steps={steps}
+                  showProgress={true}
+                  showStepDetails={true}
+                  compact={false}
+                />
+              </div>
+            )}
+
+            {/* Smart defaults for homeowner registration */}
+            {!showSignIn && (
+              <div className="mb-6">
+                <SmartDefaults
+                  defaults={homeownerDefaults}
+                  onApply={applyDefaults}
+                  title="Quick Start Templates"
+                  subtitle="Choose a template to fill in your details quickly"
+                />
+              </div>
+            )}
+
             {showSignIn ? (
               // Sign-in form
               <form onSubmit={handleSignIn} className="space-y-6">
@@ -478,6 +635,21 @@ export default function Create() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Keyboard shortcuts */}
+      <KeyboardShortcuts shortcuts={shortcuts} />
+      
+      {/* Undo system */}
+      <UndoSystem actions={actions} onUndo={removeAction} />
+      
+      {/* Welcome message */}
+      {showWelcome && (
+        <WelcomeMessage
+          type="homeowner"
+          onDismiss={dismissWelcome}
+          showStats={false}
+        />
+      )}
     </div>
   );
 }
