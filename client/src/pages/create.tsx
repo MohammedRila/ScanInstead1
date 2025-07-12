@@ -565,120 +565,81 @@ export default function Create() {
               </form>
             ) : (
               // Registration form
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-3">
-                  <Label htmlFor="email" className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Email Address <span className="text-red-500">*</span>
-                  </Label>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email Address</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
                       id="email"
                       type="email"
                       placeholder="Enter your email address"
-                      className="pl-10 h-12 text-lg border-2 focus:border-blue-500 focus:ring-blue-500"
+                      className="pl-10"
                       {...form.register("email")}
                     />
                   </div>
                   {form.formState.errors.email && (
-                    <p className="text-sm text-red-600 dark:text-red-400 flex items-center">
-                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
+                    <p className="text-sm text-red-600 dark:text-red-400">
                       {form.formState.errors.email.message}
                     </p>
                   )}
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    We'll send your pitch notifications to this email address
-                  </p>
                 </div>
 
-                <div className="space-y-3">
-                  <Label htmlFor="password" className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Password <span className="text-red-500">*</span>
-                  </Label>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
                       id="password"
                       type="password"
-                      placeholder="Create a secure password"
-                      className="pl-10 h-12 text-lg border-2 focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="Enter your password (min 8 characters)"
+                      className="pl-10"
                       {...form.register("password")}
                     />
                   </div>
                   {form.formState.errors.password && (
-                    <p className="text-sm text-red-600 dark:text-red-400 flex items-center">
-                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
+                    <p className="text-sm text-red-600 dark:text-red-400">
                       {form.formState.errors.password.message}
                     </p>
                   )}
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Must be at least 8 characters long
-                  </p>
-                </div>
-
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">What happens next?</h3>
-                  </div>
-                  <ul className="space-y-1 text-xs text-gray-600 dark:text-gray-300">
-                    <li className="flex items-center space-x-2">
-                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                      <span>Get your unique QR code instantly</span>
-                    </li>
-                    <li className="flex items-center space-x-2">
-                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                      <span>Receive welcome email with setup instructions</span>
-                    </li>
-                    <li className="flex items-center space-x-2">
-                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                      <span>Start receiving digital pitches via email</span>
-                    </li>
-                  </ul>
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full h-12 text-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg transition-all duration-200"
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
                   disabled={createMutation.isPending}
                 >
                   {createMutation.isPending ? (
                     <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-3 border-white border-t-transparent mr-3"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
                       Creating Account...
                     </div>
                   ) : (
                     <>
-                      <User className="h-5 w-5 mr-2" />
+                      <User className="h-4 w-4 mr-2" />
                       Create Account
                     </>
                   )}
                 </Button>
 
-                <div className="text-center">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    By creating an account, you agree to our{' '}
-                    <Link href="/terms" className="text-blue-600 hover:text-blue-700 underline">
-                      Terms of Service
-                    </Link>{' '}
-                    and{' '}
-                    <Link href="/privacy" className="text-blue-600 hover:text-blue-700 underline">
-                      Privacy Policy
-                    </Link>
-                  </p>
-                </div>
+
               </form>
             )}
           </CardContent>
         </Card>
+
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            By creating an account, you agree to our{' '}
+            <Link href="/terms" className="text-blue-600 hover:text-blue-700 underline">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link href="/privacy" className="text-blue-600 hover:text-blue-700 underline">
+              Privacy Policy
+            </Link>
+          </p>
+        </div>
       </div>
 
 
