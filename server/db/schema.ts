@@ -15,13 +15,15 @@ export const homeowners = pgTable('homeowners', {
 
 export const salesmen = pgTable('salesmen', {
   id: text('id').primaryKey(),
-  firstName: text('first_name').notNull(),
-  lastName: text('last_name').notNull(),
-  businessName: text('business_name').notNull(),
+  firstName: text('first_name'),
+  lastName: text('last_name'),
+  businessName: text('business_name'),
   businessType: text('business_type'),
   email: text('email').notNull().unique(),
   phone: text('phone'),
+  password: text('password').notNull(),
   isVerified: boolean('is_verified').default(false).notNull(),
+  profileCompleted: boolean('profile_completed').default(false).notNull(),
   totalScans: integer('total_scans').default(0).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   lastScanAt: timestamp('last_scan_at'),

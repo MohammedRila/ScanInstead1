@@ -15,13 +15,15 @@ export const homeownerSchema = z.object({
 // New schema for salesman accounts
 export const salesmanSchema = z.object({
   id: z.string(),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  businessName: z.string().min(1, "Business name is required"),
+  firstName: z.string().min(1, "First name is required").optional(),
+  lastName: z.string().min(1, "Last name is required").optional(),
+  businessName: z.string().min(1, "Business name is required").optional(),
   businessType: z.string().optional(),
   email: z.string().email("Valid email is required"),
   phone: z.string().optional(),
+  password: z.string().min(8, "Password must be at least 8 characters"),
   isVerified: z.boolean().default(false),
+  profileCompleted: z.boolean().default(false),
   totalScans: z.number().default(0),
   createdAt: z.date(),
   lastScanAt: z.date().optional(),
@@ -80,6 +82,25 @@ export const insertHomeownerSchema = homeownerSchema.pick({
   notificationPreference: true,
 });
 
+// Authentication schemas
+export const salesmanSignupSchema = z.object({
+  email: z.string().email("Valid email is required"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+export const salesmanLoginSchema = z.object({
+  email: z.string().email("Valid email is required"),
+  password: z.string().min(1, "Password is required"),
+});
+
+export const salesmanProfileSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  businessName: z.string().min(1, "Business name is required"),
+  businessType: z.string().optional(),
+  phone: z.string().optional(),
+});
+
 export const insertSalesmanSchema = salesmanSchema.pick({
   firstName: true,
   lastName: true,
@@ -87,6 +108,7 @@ export const insertSalesmanSchema = salesmanSchema.pick({
   businessType: true,
   email: true,
   phone: true,
+  password: true,
 });
 
 export const insertScanTrackingSchema = scanTrackingSchema.pick({
@@ -115,3 +137,6 @@ export type InsertHomeowner = z.infer<typeof insertHomeownerSchema>;
 export type InsertPitch = z.infer<typeof insertPitchSchema>;
 export type InsertSalesman = z.infer<typeof insertSalesmanSchema>;
 export type InsertScanTracking = z.infer<typeof insertScanTrackingSchema>;
+export type SalesmanSignup = z.infer<typeof salesmanSignupSchema>;
+export type SalesmanLogin = z.infer<typeof salesmanLoginSchema>;
+export type SalesmanProfile = z.infer<typeof salesmanProfileSchema>;

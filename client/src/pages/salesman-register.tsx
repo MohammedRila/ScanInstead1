@@ -50,6 +50,7 @@ export default function SalesmanRegister() {
   const [location, setLocation] = useLocation();
   const [isRegistered, setIsRegistered] = useState(false);
   const [needsVerification, setNeedsVerification] = useState(false);
+  const [needsProfile, setNeedsProfile] = useState(false);
   const [salesmanId, setSalesmanId] = useState<string | null>(null);
   const [salesmanEmail, setSalesmanEmail] = useState<string>("");
   const [showSignIn, setShowSignIn] = useState(false);
@@ -84,28 +85,45 @@ export default function SalesmanRegister() {
     setSalesmanId(null);
     setNeedsVerification(false);
     setShowSignIn(false);
-    form.reset();
+    authForm.reset();
+    profileForm.reset();
   };
 
-  const form = useForm<InsertSalesman>({
-    resolver: zodResolver(insertSalesmanSchema),
+  const authForm = useForm<{ email: string; password: string }>({
+    resolver: zodResolver(z.object({
+      email: z.string().email("Valid email is required"),
+      password: z.string().min(8, "Password must be at least 8 characters"),
+    })),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const profileForm = useForm<{ firstName: string; lastName: string; businessName: string; businessType?: string; phone?: string }>({
+    resolver: zodResolver(z.object({
+      firstName: z.string().min(1, "First name is required"),
+      lastName: z.string().min(1, "Last name is required"),
+      businessName: z.string().min(1, "Business name is required"),
+      businessType: z.string().optional(),
+      phone: z.string().optional(),
+    })),
     defaultValues: {
       firstName: "",
       lastName: "",
       businessName: "",
       businessType: "",
-      email: "",
       phone: "",
     },
   });
 
-  const registerMutation = useMutation({
-    mutationFn: async (data: InsertSalesman) => {
+  const signupMutation = useMutation({
+    mutationFn: async (data: { email: string; password: string }) => {
       try {
-        const response = await apiRequest("POST", "/api/salesman/register", data);
+        const response = await apiRequest("POST", "/api/salesman/signup", data);
         return response.json();
       } catch (error) {
-        console.error('Registration error:', error);
+        console.error('Signup error:', error);
         throw error;
       }
     },
@@ -115,8 +133,8 @@ export default function SalesmanRegister() {
         setSalesmanEmail(data.salesman.email);
         setSalesmanId(data.salesman.id);
         toast({
-          title: "Registration Successful!",
-          description: "Please check your email to verify your account before signing in.",
+          title: "Account Created!",
+          description: "Please check your email to verify your account.",
         });
       } else if (data.existingUser) {
         toast({
@@ -124,14 +142,6 @@ export default function SalesmanRegister() {
           description: "Please use the sign-in option instead.",
         });
         setShowSignIn(true);
-      } else {
-        setIsRegistered(true);
-        setSalesmanId(data.salesman.id);
-        localStorage.setItem('salesmanId', data.salesman.id);
-        toast({
-          title: "Registration Complete!",
-          description: "You can now scan QR codes throughout the neighborhood.",
-        });
       }
     },
     onError: (error: any) => {
@@ -143,11 +153,89 @@ export default function SalesmanRegister() {
         });
       } else {
         toast({
-          title: "Registration Failed",
+          title: "Signup Failed",
           description: error instanceof Error ? error.message : "Please try again",
           variant: "destructive",
         });
       }
+    },
+  });
+
+  const loginMutation = useMutation({
+    mutationFn: async (data: { email: string; password: string }) => {
+      try {
+        const response = await apiRequest("POST", "/api/salesman/login", data);
+        return response.json();
+      } catch (error) {
+        console.error('Login error:', error);
+        throw error;
+      }
+    },
+    onSuccess: (data) => {
+      if (data.needsVerification) {
+        setNeedsVerification(true);
+        setSalesmanEmail(data.salesman.email);
+        setSalesmanId(data.salesman.id);
+        toast({
+          title: "Email Not Verified",
+          description: "Please verify your email address first.",
+          variant: "destructive",
+        });
+      } else if (data.needsProfile) {
+        setNeedsProfile(true);
+        setSalesmanId(data.salesman.id);
+        setSalesmanEmail(data.salesman.email);
+        toast({
+          title: "Welcome Back!",
+          description: "Please complete your profile to continue.",
+        });
+      } else {
+        setIsRegistered(true);
+        setSalesmanId(data.salesman.id);
+        localStorage.setItem('salesmanId', data.salesman.id);
+        toast({
+          title: "Welcome Back!",
+          description: "You can now access your dashboard.",
+        });
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Login Failed",
+        description: error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const profileMutation = useMutation({
+    mutationFn: async (data: { firstName: string; lastName: string; businessName: string; businessType?: string; phone?: string }) => {
+      try {
+        const response = await apiRequest("POST", "/api/salesman/profile", {
+          salesmanId,
+          ...data,
+        });
+        return response.json();
+      } catch (error) {
+        console.error('Profile error:', error);
+        throw error;
+      }
+    },
+    onSuccess: (data) => {
+      setIsRegistered(true);
+      setNeedsProfile(false);
+      localStorage.setItem('salesmanId', data.salesman.id);
+      toast({
+        title: "Profile Complete!",
+        description: "You can now scan QR codes throughout the neighborhood.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Profile Failed",
+        description: error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
     },
   });
 
@@ -175,47 +263,7 @@ export default function SalesmanRegister() {
     },
   });
 
-  const signInMutation = useMutation({
-    mutationFn: async (email: string) => {
-      const response = await apiRequest("POST", "/api/salesman/signin", { email });
-      return response.json();
-    },
-    onSuccess: (data) => {
-      setIsRegistered(true);
-      setSalesmanId(data.salesman.id);
-      localStorage.setItem('salesmanId', data.salesman.id);
-      toast({
-        title: "Welcome Back!",
-        description: "You can now access your dashboard.",
-      });
-    },
-    onError: (error: any) => {
-      if (error.status === 403) {
-        setNeedsVerification(true);
-        setSalesmanEmail(signInForm.getValues("email"));
-        toast({
-          title: "Email Not Verified",
-          description: "Please verify your email address first.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Sign In Failed",
-          description: error instanceof Error ? error.message : "Please try again",
-          variant: "destructive",
-        });
-      }
-    },
-  });
 
-  const signInForm = useForm<{ email: string }>({
-    resolver: zodResolver(z.object({
-      email: z.string().email("Valid email is required"),
-    })),
-    defaultValues: {
-      email: "",
-    },
-  });
 
   const viewDashboard = () => {
     setLocation(`/salesman/dashboard/${salesmanId}`);
@@ -257,6 +305,132 @@ export default function SalesmanRegister() {
               Back to Sign In
             </Button>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Profile completion screen
+  if (needsProfile && salesmanId) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 dark:from-gray-900 dark:to-gray-800 py-8">
+        <div className="max-w-2xl mx-auto px-4">
+          <div className="text-center mb-8">
+            <div className="mx-auto w-20 h-20 bg-orange-600 rounded-full flex items-center justify-center mb-6">
+              <Briefcase className="w-10 h-10 text-white" />
+            </div>
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              Complete Your Profile
+            </h1>
+            <p className="text-xl text-gray-600 dark:text-gray-300">
+              Please provide your business information to complete your registration.
+            </p>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">Business Information</CardTitle>
+              <CardDescription>
+                This information will be saved so you don't need to re-enter it for each scan
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...profileForm}>
+                <form onSubmit={profileForm.handleSubmit((data) => profileMutation.mutate(data))} className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <FormField
+                      control={profileForm.control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Legal First Name</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="Enter your legal first name" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={profileForm.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Legal Last Name</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="Enter your legal last name" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={profileForm.control}
+                    name="businessName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Business Name</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Enter your business name" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={profileForm.control}
+                    name="businessType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Business Type</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select your business type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {BUSINESS_TYPES.map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={profileForm.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone Number (Optional)</FormLabel>
+                        <FormControl>
+                          <Input {...field} type="tel" placeholder="Enter your phone number" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-orange-600 hover:bg-orange-700"
+                    disabled={profileMutation.isPending}
+                  >
+                    {profileMutation.isPending ? "Completing Profile..." : "Complete Profile"}
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -380,10 +554,10 @@ export default function SalesmanRegister() {
           <CardContent>
             {showSignIn ? (
               // Sign-in form
-              <Form {...signInForm}>
-                <form onSubmit={signInForm.handleSubmit((data) => signInMutation.mutate(data.email))} className="space-y-4">
+              <Form {...authForm}>
+                <form onSubmit={authForm.handleSubmit((data) => loginMutation.mutate(data))} className="space-y-4">
                   <FormField
-                    control={signInForm.control}
+                    control={authForm.control}
                     name="email"
                     render={({ field }) => (
                       <FormItem>
@@ -396,28 +570,41 @@ export default function SalesmanRegister() {
                     )}
                   />
                   
+                  <FormField
+                    control={authForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input {...field} type="password" placeholder="Enter your password" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
                   <Button 
                     type="submit" 
                     className="w-full bg-orange-600 hover:bg-orange-700"
-                    disabled={signInMutation.isPending}
+                    disabled={loginMutation.isPending}
                   >
-                    {signInMutation.isPending ? "Signing In..." : "Sign In"}
+                    {loginMutation.isPending ? "Signing In..." : "Sign In"}
                   </Button>
                 </form>
               </Form>
             ) : (
-              // Registration form
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit((data) => registerMutation.mutate(data))} className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
+              // Create account form (simplified)
+              <Form {...authForm}>
+                <form onSubmit={authForm.handleSubmit((data) => signupMutation.mutate(data))} className="space-y-4">
                   <FormField
-                    control={form.control}
-                    name="firstName"
+                    control={authForm.control}
+                    name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Legal First Name</FormLabel>
+                        <FormLabel>Email Address</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Enter your legal first name" />
+                          <Input {...field} type="email" placeholder="Enter your email address" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -425,94 +612,26 @@ export default function SalesmanRegister() {
                   />
 
                   <FormField
-                    control={form.control}
-                    name="lastName"
+                    control={authForm.control}
+                    name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Legal Last Name</FormLabel>
+                        <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Enter your legal last name" />
+                          <Input {...field} type="password" placeholder="Enter your password (min 8 characters)" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                </div>
 
-                <FormField
-                  control={form.control}
-                  name="businessName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Business Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Enter your business name" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="businessType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Business Type</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select your business type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {BUSINESS_TYPES.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {type}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email Address</FormLabel>
-                      <FormControl>
-                        <Input {...field} type="email" placeholder="Enter your email" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone Number (Optional)</FormLabel>
-                      <FormControl>
-                        <Input {...field} type="tel" placeholder="Enter your phone number" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button 
-                  type="submit" 
-                  className="w-full bg-orange-600 hover:bg-orange-700"
-                  disabled={registerMutation.isPending}
-                >
-                  {registerMutation.isPending ? "Creating Account..." : "Create My Account"}
-                </Button>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-orange-600 hover:bg-orange-700"
+                    disabled={signupMutation.isPending}
+                  >
+                    {signupMutation.isPending ? "Creating Account..." : "Create My Account"}
+                  </Button>
                 </form>
               </Form>
             )}

@@ -21,6 +21,8 @@ export interface IStorage {
   createPitch(pitch: InsertPitch & { fileUrl?: string }): Promise<Pitch>;
   getPitchesByHomeowner(homeownerId: string): Promise<Pitch[]>;
   createSalesman(salesman: InsertSalesman): Promise<Salesman>;
+  createSalesmanAuth(auth: { email: string; password: string }): Promise<Salesman>;
+  updateSalesmanProfile(id: string, profile: { firstName: string; lastName: string; businessName: string; businessType?: string; phone?: string }): Promise<Salesman>;
   getSalesman(id: string): Promise<Salesman | undefined>;
   getSalesmanByEmail(email: string): Promise<Salesman | undefined>;
   verifySalesman(id: string): Promise<void>;
@@ -259,6 +261,7 @@ export class SupabaseStorage implements IStorage {
       id,
       createdAt,
       isVerified: false,
+      profileCompleted: false,
       totalScans: 0,
       lastScanAt: undefined,
     };
@@ -271,13 +274,70 @@ export class SupabaseStorage implements IStorage {
       businessType: salesman.businessType,
       email: salesman.email,
       phone: salesman.phone,
+      password: salesman.password,
       isVerified: salesman.isVerified,
+      profileCompleted: salesman.profileCompleted,
       totalScans: salesman.totalScans,
       createdAt: salesman.createdAt,
       lastScanAt: salesman.lastScanAt,
     });
 
     return salesman;
+  }
+
+  async createSalesmanAuth(auth: { email: string; password: string }): Promise<Salesman> {
+    const id = uuidv4();
+    const createdAt = new Date();
+    
+    const salesman: Salesman = {
+      id,
+      email: auth.email,
+      password: auth.password,
+      firstName: undefined,
+      lastName: undefined,
+      businessName: undefined,
+      businessType: undefined,
+      phone: undefined,
+      isVerified: false,
+      profileCompleted: false,
+      totalScans: 0,
+      createdAt,
+      lastScanAt: undefined,
+    };
+
+    await db.insert(salesmen).values({
+      id: salesman.id,
+      email: salesman.email,
+      password: salesman.password,
+      firstName: salesman.firstName,
+      lastName: salesman.lastName,
+      businessName: salesman.businessName,
+      businessType: salesman.businessType,
+      phone: salesman.phone,
+      isVerified: salesman.isVerified,
+      profileCompleted: salesman.profileCompleted,
+      totalScans: salesman.totalScans,
+      createdAt: salesman.createdAt,
+      lastScanAt: salesman.lastScanAt,
+    });
+
+    return salesman;
+  }
+
+  async updateSalesmanProfile(id: string, profile: { firstName: string; lastName: string; businessName: string; businessType?: string; phone?: string }): Promise<Salesman> {
+    await db.update(salesmen)
+      .set({
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        businessName: profile.businessName,
+        businessType: profile.businessType,
+        phone: profile.phone,
+        profileCompleted: true,
+      })
+      .where(eq(salesmen.id, id));
+
+    const updatedSalesman = await this.getSalesman(id);
+    return updatedSalesman!;
   }
 
   async getSalesman(id: string): Promise<Salesman | undefined> {

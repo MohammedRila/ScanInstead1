@@ -11,6 +11,7 @@ import { dataMonitor } from "./services/data_monitor";
 import { getHomeownerAnalytics, getSalesmanLeaderboard, getRealtimeStats } from "./routes/supabase";
 import { body, param, validationResult } from "express-validator";
 import xss from "xss";
+import bcrypt from "bcryptjs";
 
 import multer from "multer";
 import path from "path";
@@ -388,35 +389,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Salesman registration route
-  app.post("/api/salesman/register", 
+  // Salesman signup route (email + password only)
+  app.post("/api/salesman/signup", 
     [
-      body('firstName').isLength({ min: 1, max: 50 }).withMessage('First name is required (max 50 characters)'),
-      body('lastName').isLength({ min: 1, max: 50 }).withMessage('Last name is required (max 50 characters)'),
       body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
-      body('phone').optional().isMobilePhone().withMessage('Valid phone number is required'),
-      body('businessName').isLength({ min: 1, max: 100 }).withMessage('Business name is required (max 100 characters)'),
-      body('businessType').isLength({ min: 1, max: 50 }).withMessage('Business type is required (max 50 characters)'),
+      body('password').isLength({ min: 8, max: 100 }).withMessage('Password must be at least 8 characters'),
       sanitizeInput,
       validateRequest
     ],
     async (req, res) => {
     try {
-      const validatedData = insertSalesmanSchema.parse(req.body);
+      const { email, password } = req.body;
 
       // Check if user already exists
-      const existingSalesman = await storage.getSalesmanByEmail(validatedData.email);
+      const existingSalesman = await storage.getSalesmanByEmail(email);
 
       if (existingSalesman) {
         return res.status(409).json({
           success: false,
           message: 'An account with this email already exists.',
           existingUser: true,
-          salesman: existingSalesman,
         });
       }
 
-      const salesman = await storage.createSalesman(validatedData);
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 12);
+
+      const salesman = await storage.createSalesmanAuth({
+        email,
+        password: hashedPassword,
+      });
 
       // Send verification email
       try {
@@ -430,15 +432,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         success: true,
-        message: 'Service provider registered successfully! Please check your email for verification.',
-        salesman,
+        message: 'Account created successfully! Please check your email for verification.',
+        salesman: {
+          id: salesman.id,
+          email: salesman.email,
+          isVerified: salesman.isVerified,
+          profileCompleted: salesman.profileCompleted,
+        },
         needsVerification: true,
       });
     } catch (error) {
-      console.error('Error registering salesman:', error);
+      console.error('Error creating account:', error);
       res.status(400).json({
         success: false,
-        message: error instanceof Error ? error.message : 'Failed to register service provider',
+        message: error instanceof Error ? error.message : 'Failed to create account',
+      });
+    }
+  });
+
+  // Salesman login route
+  app.post("/api/salesman/login", 
+    [
+      body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
+      body('password').isLength({ min: 1 }).withMessage('Password is required'),
+      sanitizeInput,
+      validateRequest
+    ],
+    async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      // Find salesman by email
+      const salesman = await storage.getSalesmanByEmail(email);
+
+      if (!salesman) {
+        return res.status(404).json({
+          success: false,
+          message: 'Invalid email or password.',
+        });
+      }
+
+      // Check password
+      const isPasswordValid = await bcrypt.compare(password, salesman.password);
+
+      if (!isPasswordValid) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid email or password.',
+        });
+      }
+
+      if (!salesman.isVerified) {
+        return res.status(403).json({
+          success: false,
+          message: 'Please verify your email address before signing in.',
+          needsVerification: true,
+          salesman: {
+            id: salesman.id,
+            email: salesman.email,
+            isVerified: salesman.isVerified,
+            profileCompleted: salesman.profileCompleted,
+          },
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'Welcome back!',
+        salesman: {
+          id: salesman.id,
+          email: salesman.email,
+          isVerified: salesman.isVerified,
+          profileCompleted: salesman.profileCompleted,
+          firstName: salesman.firstName,
+          lastName: salesman.lastName,
+          businessName: salesman.businessName,
+          businessType: salesman.businessType,
+          phone: salesman.phone,
+        },
+        needsProfile: !salesman.profileCompleted,
+      });
+    } catch (error) {
+      console.error('Error logging in:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to log in',
+      });
+    }
+  });
+
+  // Salesman profile completion route
+  app.post("/api/salesman/profile", 
+    [
+      body('salesmanId').isUUID().withMessage('Valid salesman ID is required'),
+      body('firstName').isLength({ min: 1, max: 50 }).withMessage('First name is required (max 50 characters)'),
+      body('lastName').isLength({ min: 1, max: 50 }).withMessage('Last name is required (max 50 characters)'),
+      body('businessName').isLength({ min: 1, max: 100 }).withMessage('Business name is required (max 100 characters)'),
+      body('businessType').optional().isLength({ max: 50 }).withMessage('Business type max 50 characters'),
+      body('phone').optional().isMobilePhone().withMessage('Valid phone number is required'),
+      sanitizeInput,
+      validateRequest
+    ],
+    async (req, res) => {
+    try {
+      const { salesmanId, firstName, lastName, businessName, businessType, phone } = req.body;
+
+      const salesman = await storage.getSalesman(salesmanId);
+
+      if (!salesman) {
+        return res.status(404).json({
+          success: false,
+          message: 'Salesman not found.',
+        });
+      }
+
+      if (!salesman.isVerified) {
+        return res.status(403).json({
+          success: false,
+          message: 'Please verify your email first.',
+        });
+      }
+
+      const updatedSalesman = await storage.updateSalesmanProfile(salesmanId, {
+        firstName,
+        lastName,
+        businessName,
+        businessType,
+        phone,
+      });
+
+      res.json({
+        success: true,
+        message: 'Profile completed successfully!',
+        salesman: {
+          id: updatedSalesman.id,
+          email: updatedSalesman.email,
+          isVerified: updatedSalesman.isVerified,
+          profileCompleted: updatedSalesman.profileCompleted,
+          firstName: updatedSalesman.firstName,
+          lastName: updatedSalesman.lastName,
+          businessName: updatedSalesman.businessName,
+          businessType: updatedSalesman.businessType,
+          phone: updatedSalesman.phone,
+        },
+      });
+    } catch (error) {
+      console.error('Error completing profile:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to complete profile',
       });
     }
   });
