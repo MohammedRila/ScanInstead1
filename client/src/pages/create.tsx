@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { CheckCircle, Copy, Download, Printer, QrCode, LogIn, ArrowLeft, Mail, User, Home } from "lucide-react";
+import { CheckCircle, Copy, Download, Printer, QrCode, LogIn, ArrowLeft, Mail, User, Home, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useLocation } from "wouter";
 import { SEOHead, seoConfigs } from "@/components/seo-head";
@@ -59,11 +59,14 @@ export default function Create() {
     }
   ];
 
-  const form = useForm<InsertHomeowner>({
-    resolver: zodResolver(insertHomeownerSchema),
+  const form = useForm<InsertHomeowner & { password: string }>({
+    resolver: zodResolver(insertHomeownerSchema.extend({
+      password: z.string().min(8, "Password must be at least 8 characters"),
+    })),
     defaultValues: {
-      fullName: "",
+      fullName: "New Homeowner",
       email: "",
+      password: "",
     },
   });
 
@@ -105,10 +108,10 @@ export default function Create() {
   // Auto-save form data
   const formData = form.watch();
   useEffect(() => {
-    if (formData.fullName || formData.email) {
-      localStorage.setItem('homeowner-create-draft', JSON.stringify(formData));
+    if (formData.email || formData.password) {
+      localStorage.setItem('homeowner-create-draft', JSON.stringify({ email: formData.email }));
     }
-  }, [formData.fullName, formData.email]);
+  }, [formData.email, formData.password]);
 
   // Auto-save function for AutoSave component
   const handleAutoSave = useCallback(async (data: any) => {
@@ -583,30 +586,6 @@ export default function Create() {
               // Registration form
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-3">
-                  <Label htmlFor="fullName" className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Full Name <span className="text-red-500">*</span>
-                  </Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="fullName"
-                      type="text"
-                      placeholder="Enter your full name"
-                      className="pl-10 h-12 text-lg border-2 focus:border-blue-500 focus:ring-blue-500"
-                      {...form.register("fullName")}
-                    />
-                  </div>
-                  {form.formState.errors.fullName && (
-                    <p className="text-sm text-red-600 dark:text-red-400 flex items-center">
-                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      {form.formState.errors.fullName.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-3">
                   <Label htmlFor="email" className="text-lg font-semibold text-gray-900 dark:text-white">
                     Email Address <span className="text-red-500">*</span>
                   </Label>
@@ -630,6 +609,33 @@ export default function Create() {
                   )}
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     We'll send your pitch notifications to this email address
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="password" className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Password <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="Create a secure password"
+                      className="pl-10 h-12 text-lg border-2 focus:border-blue-500 focus:ring-blue-500"
+                      {...form.register("password")}
+                    />
+                  </div>
+                  {form.formState.errors.password && (
+                    <p className="text-sm text-red-600 dark:text-red-400 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {form.formState.errors.password.message}
+                    </p>
+                  )}
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Must be at least 8 characters long
                   </p>
                 </div>
 
@@ -660,18 +666,18 @@ export default function Create() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 text-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg transition-all duration-200"
+                  className="w-full h-12 text-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg transition-all duration-200"
                   disabled={createMutation.isPending}
                 >
                   {createMutation.isPending ? (
                     <div className="flex items-center">
                       <div className="animate-spin rounded-full h-5 w-5 border-3 border-white border-t-transparent mr-3"></div>
-                      Creating Your QR Code...
+                      Creating Account...
                     </div>
                   ) : (
                     <>
-                      <QrCode className="h-5 w-5 mr-2" />
-                      Generate My QR Code
+                      <User className="h-5 w-5 mr-2" />
+                      Create Account
                     </>
                   )}
                 </Button>
