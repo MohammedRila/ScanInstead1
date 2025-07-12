@@ -374,12 +374,15 @@ export default function Create() {
                       id="fullName"
                       type="text"
                       placeholder="Enter your full name"
-                      className="pl-10"
+                      className="pl-10 h-12 text-lg border-2 focus:border-blue-500 focus:ring-blue-500"
                       {...form.register("fullName")}
                     />
                   </div>
                   {form.formState.errors.fullName && (
-                    <p className="text-sm text-red-600 dark:text-red-400">
+                    <p className="text-sm text-red-600 dark:text-red-400 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
                       {form.formState.errors.fullName.message}
                     </p>
                   )}
@@ -395,29 +398,57 @@ export default function Create() {
                       id="email"
                       type="email"
                       placeholder="Enter your email address"
-                      className="pl-10"
+                      className="pl-10 h-12 text-lg border-2 focus:border-blue-500 focus:ring-blue-500"
                       {...form.register("email")}
                     />
                   </div>
                   {form.formState.errors.email && (
-                    <p className="text-sm text-red-600 dark:text-red-400">
+                    <p className="text-sm text-red-600 dark:text-red-400 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
                       {form.formState.errors.email.message}
                     </p>
                   )}
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    You'll receive pitch submissions at this email address
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    We'll send your pitch notifications to this email address
                   </p>
+                </div>
+
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">What happens next?</h3>
+                  </div>
+                  <ul className="space-y-1 text-xs text-gray-600 dark:text-gray-300">
+                    <li className="flex items-center space-x-2">
+                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                      <span>Get your unique QR code instantly</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                      <span>Receive welcome email with setup instructions</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                      <span>Start receiving digital pitches via email</span>
+                    </li>
+                  </ul>
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 text-lg"
+                  className="w-full h-12 text-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg transition-all duration-200"
                   disabled={createMutation.isPending}
                 >
                   {createMutation.isPending ? (
                     <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                      Creating your QR code...
+                      <div className="animate-spin rounded-full h-5 w-5 border-3 border-white border-t-transparent mr-3"></div>
+                      Creating Your QR Code...
                     </div>
                   ) : (
                     <>
@@ -426,42 +457,23 @@ export default function Create() {
                     </>
                   )}
                 </Button>
+
+                <div className="text-center">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    By creating an account, you agree to our{' '}
+                    <Link href="/terms" className="text-blue-600 hover:text-blue-700 underline">
+                      Terms of Service
+                    </Link>{' '}
+                    and{' '}
+                    <Link href="/privacy" className="text-blue-600 hover:text-blue-700 underline">
+                      Privacy Policy
+                    </Link>
+                  </p>
+                </div>
               </form>
             )}
           </CardContent>
         </Card>
-
-        {/* Benefits Section */}
-        <div className="mt-12 text-center">
-          <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/50 dark:to-blue-950/50 rounded-2xl p-8 border border-green-200 dark:border-green-800">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              Why Choose ScanInstead?
-            </h3>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">🚪</div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">No More Knocking</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  End interruptions while staying open to opportunities
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">📧</div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Email Delivery</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Receive organized pitches directly in your inbox
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">🔒</div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Safe & Secure</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Maintain privacy with professional filtering
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
