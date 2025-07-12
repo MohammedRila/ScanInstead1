@@ -173,6 +173,10 @@ All major OWASP vulnerabilities addressed with comprehensive protection layers.
 ```
 Changelog:
 - July 12, 2025. COMPLETED MIGRATION FROM REPLIT AGENT TO REPLIT ENVIRONMENT - ALL SYSTEMS OPERATIONAL
+- July 12, 2025. Created professional role selection page (/get-started) for formal user onboarding
+- July 12, 2025. Removed duplicate pages: role-selection.tsx and homeowner-register.tsx for cleaner navigation
+- July 12, 2025. Updated home page buttons to redirect to role selection before QR code creation
+- July 12, 2025. Streamlined user flow: Home → Get Started → Select Role → Create QR Code
 - July 12, 2025. Fixed QR code generation to point directly to pitch form (/v/{id}) instead of landing page (/l/{id})
 - July 12, 2025. Streamlined pitch submission process - QR code users now go directly to clean mobile form
 - July 12, 2025. Updated pitch page to skip role selection for QR code access, maintaining demo mode functionality

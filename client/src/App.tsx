@@ -12,9 +12,7 @@ import { useAnalytics } from "./hooks/use-analytics";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Create from "@/pages/create";
-import RoleSelection from "@/pages/role-selection";
 import SelectRole from "@/pages/select-role";
-import HomeownerRegister from "@/pages/homeowner-register";
 import Pitch from "@/pages/pitch";
 import Success from "@/pages/success";
 import Landing from "@/pages/landing";
@@ -40,8 +38,6 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/get-started" component={SelectRole} />
           <Route path="/create" component={Create} />
-          <Route path="/role-selection" component={RoleSelection} />
-          <Route path="/homeowner/register" component={HomeownerRegister} />
           <Route path="/l/:id" component={Landing} />
           <Route path="/homeowner/welcome/:id" component={HomeownerWelcome} />
           <Route path="/homeowner/dashboard/:id" component={HomeownerDashboard} />
