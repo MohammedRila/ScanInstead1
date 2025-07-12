@@ -568,16 +568,12 @@ export default function Create() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email Address</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Enter your email address"
-                      className="pl-10 pr-4"
-                      {...form.register("email")}
-                    />
-                  </div>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email address"
+                    {...form.register("email")}
+                  />
                   {form.formState.errors.email && (
                     <p className="text-sm text-red-600 dark:text-red-400">
                       {form.formState.errors.email.message}
@@ -587,16 +583,12 @@ export default function Create() {
 
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="Enter your password (min 8 characters)"
-                      className="pl-10 pr-4"
-                      {...form.register("password")}
-                    />
-                  </div>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password (min 8 characters)"
+                    {...form.register("password")}
+                  />
                   {form.formState.errors.password && (
                     <p className="text-sm text-red-600 dark:text-red-400">
                       {form.formState.errors.password.message}
