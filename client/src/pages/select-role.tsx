@@ -68,18 +68,11 @@ export default function SelectRole() {
                   Review offers on your own time
                 </div>
               </div>
-              <div className="space-y-3">
-                <Link href="/homeowner/signup" onClick={() => handleRoleSelection('homeowner')}>
-                  <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-lg py-3 shadow-lg hover:shadow-xl transition-all duration-200">
-                    Create New Account
-                  </Button>
-                </Link>
-                <Link href="/homeowner/login">
-                  <Button variant="outline" className="w-full border-blue-300 text-blue-700 hover:bg-blue-50 text-lg py-3">
-                    Sign In to Existing Account
-                  </Button>
-                </Link>
-              </div>
+              <Link href="/create" onClick={() => handleRoleSelection('homeowner')}>
+                <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-lg py-3 shadow-lg hover:shadow-xl transition-all duration-200">
+                  Create My QR Code
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 

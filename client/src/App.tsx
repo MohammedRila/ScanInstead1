@@ -26,8 +26,7 @@ import Terms from "@/pages/terms";
 import Privacy from "@/pages/privacy";
 import FAQ from "@/pages/faq";
 import Features from "@/pages/features";
-import { HomeownerSignup } from "@/pages/homeowner-signup";
-import { HomeownerLogin } from "@/pages/homeowner-login";
+
 
 function Router() {
   // Track page views when routes change
@@ -41,8 +40,7 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/get-started" component={SelectRole} />
           <Route path="/create" component={Create} />
-          <Route path="/homeowner/signup" component={HomeownerSignup} />
-          <Route path="/homeowner/login" component={HomeownerLogin} />
+
           <Route path="/salesman/register" component={SalesmanRegister} />
           <Route path="/l/:id" component={Landing} />
           <Route path="/homeowner/welcome/:id" component={HomeownerWelcome} />
