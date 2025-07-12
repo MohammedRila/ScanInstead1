@@ -13,6 +13,7 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Create from "@/pages/create";
 import RoleSelection from "@/pages/role-selection";
+import SelectRole from "@/pages/select-role";
 import HomeownerRegister from "@/pages/homeowner-register";
 import Pitch from "@/pages/pitch";
 import Success from "@/pages/success";
@@ -37,6 +38,7 @@ function Router() {
       <main className="flex-1">
         <Switch>
           <Route path="/" component={Home} />
+          <Route path="/get-started" component={SelectRole} />
           <Route path="/create" component={Create} />
           <Route path="/role-selection" component={RoleSelection} />
           <Route path="/homeowner/register" component={HomeownerRegister} />
