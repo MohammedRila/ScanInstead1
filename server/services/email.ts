@@ -183,7 +183,7 @@ export async function sendSalesmanWelcomeEmail(salesman: any): Promise<void> {
         <div style="text-align: center; margin: 30px 0;">
           <a href="https://${process.env.REPLIT_DOMAINS?.split(',')[0] || process.env.BASE_URL?.replace(/^https?:\/\//, '') || 'replit.app'}/salesman/register" 
              style="background-color: #EA580C; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px; margin-bottom: 15px;">
-            ${sanitizedSalesman.isVerified ? 'Complete Your Profile' : 'Verify Email & Complete Profile'}
+            ${sanitizedSalesman.isVerified ? 'Complete Your Profile' : 'Verify Email'}
           </a>
         </div>
         
